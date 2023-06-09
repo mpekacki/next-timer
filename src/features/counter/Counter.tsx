@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 
 import { useAppSelector, useAppDispatch } from '../../hooks'
 import {
@@ -17,6 +17,13 @@ function Counter() {
   const [incrementAmount, setIncrementAmount] = useState('2')
 
   const incrementValue = Number(incrementAmount) || 0
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      dispatch(increment())
+    }, 1000)
+    return () => clearInterval(interval)
+  }, [dispatch])
 
   return (
     <div>
