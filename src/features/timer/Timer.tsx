@@ -5,6 +5,7 @@ import {
   start,
   hold,
   returnToWork,
+  startBreak,
   setContinuousWork,
   addTask,
   setSelectedTask,
@@ -16,6 +17,7 @@ import {
   selectTotalTimeWorked,
   selectAvailableBreakTime,
   selectContinousWork,
+  selectIsBreakAvailable,
   selectTasks,
   selectSelectedTask,
   selectEvents
@@ -45,6 +47,7 @@ function Timer() {
   const totalTimeWorked = `Total time worked: ${useSelector(selectTotalTimeWorked)}`
   const availableBreakTime = `Available break time: ${useSelector(selectAvailableBreakTime)}`
   const continuousWork = useSelector(selectContinousWork)
+  const isBreakAvailable = useSelector(selectIsBreakAvailable)
   const tasks = useSelector(selectTasks)
   const selectedTask = useSelector(selectSelectedTask)
   const events = useSelector(selectEvents)
@@ -58,6 +61,7 @@ function Timer() {
       {isIdle && <button onClick={() => dispatch(start())}>Start</button>}
       {isRunning && <button onClick={() => dispatch(hold())}>Hold</button>}
       {isBreak && <button onClick={() => dispatch(returnToWork())}>Return to work</button>}
+      {isWork && isBreakAvailable && <button onClick={() => dispatch(startBreak())}>Break</button>}
       <div>{time}</div>
       <div>{totalTimeWorked}</div>
       <div>{availableBreakTime}</div>

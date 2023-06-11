@@ -114,6 +114,10 @@ export const timerSlice = createSlice({
       state.phase = "work"
       state.seconds = state.settings.workSeconds
     },
+    startBreak: (state) => {
+      state.phase = "break"
+      state.seconds = state.availableBreakTimeSeconds
+    },
     setContinuousWork: (state, action: PayloadAction<boolean>) => {
       state.continousWork = action.payload
     },
@@ -131,7 +135,7 @@ export const timerSlice = createSlice({
   }
 })
 
-export const { tick, start, hold, returnToWork, setContinuousWork, addTask, setSelectedTask } = timerSlice.actions
+export const { tick, start, hold, returnToWork, startBreak, setContinuousWork, addTask, setSelectedTask } = timerSlice.actions
 
 export const selectTime = (state: AppState) => `${String(Math.floor(state.seconds / 60)).padStart(2, "0")}:${String(state.seconds % 60).padStart(2, "0")}`
 export const selectIsIdle = (state: AppState) => state.status === "idle"
@@ -148,5 +152,6 @@ export const selectEvents = (state: AppState) => state.events.map(event => ({
   start: new Date(event.start),
   end: new Date(event.end)
 }))
+export const selectIsBreakAvailable = (state: AppState) => state.availableBreakTimeSeconds > 0
 
 export default timerSlice.reducer

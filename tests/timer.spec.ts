@@ -147,6 +147,25 @@ test('enable continuous mode', async ({ page }) => {
   await app.showsAvailableBreakTime(0, 10, 0);
 });
 
+test('go on a break if available', async ({ page }) => {
+  const app = new ApplicationRunner(page);
+  await app.goToStartPage();
+  await app.enableContinuousMode();
+  await app.start();
+  await app.doesNotShowBreakButton();
+  await app.tick(0, 25);
+  await app.showsTimer(25, 0);
+  await app.showsWorkStatus();
+  await app.showsAvailableBreakTime(0, 5, 0);
+  await app.showsBreakButton();
+  await app.break();
+  await app.showsTimer(5, 0);
+  await app.showsBreakStatus();
+  await app.showsAvailableBreakTime(0, 5, 0);
+  await app.doesNotShowBreakButton();
+});
+
+
 class ApplicationRunner {
   constructor(private page: Page) {}
 
@@ -166,12 +185,20 @@ class ApplicationRunner {
     return this.page.getByRole('button', { name: 'Hold' });
   }
 
+  getBreakButton() {
+    return this.page.getByRole('button', { name: 'Break' });
+  }
+
   async start() {
     await this.getStartButton().click();
   }
 
   async hold() {
     await this.getHoldButton().click();
+  }
+
+  async break() {
+    await this.getBreakButton().click();
   }
 
   async returnToWork() {
@@ -201,6 +228,14 @@ class ApplicationRunner {
 
   async showsAvailableBreakTime(hours: number, minutes: number, seconds: number) {
     await expect(this.page.getByText(`Available break time: ${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`)).toBeVisible();
+  }
+
+  async doesNotShowBreakButton() {
+    await expect(this.getBreakButton()).not.toBeVisible();
+  }
+
+  async showsBreakButton() {
+    await expect(this.getBreakButton()).toBeVisible();
   }
 
   async saveTask(taskName: string) {
