@@ -1,7 +1,6 @@
 import type { NextPage } from 'next'
 import Head from 'next/head'
 
-// import Counter from '../features/counter/Counter'
 import Timer from '../features/timer/Timer'
 import styles from '../styles/Home.module.css'
 
@@ -14,7 +13,6 @@ const IndexPage: NextPage = () => {
       </Head>
       <header className={styles.header}>
         <img src="/logo.svg" className={styles.logo} alt="logo" />
-        {/* <Counter /> */}
         <Timer />
         <p>
           Edit <code>src/App.tsx</code> and save to reload.
