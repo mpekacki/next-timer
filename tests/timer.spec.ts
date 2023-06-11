@@ -132,6 +132,21 @@ test('cut break early', async ({ page }) => {
   await app.showsAvailableBreakTime(0, 5, 0);
 });
 
+test('enable continuous mode', async ({ page }) => {
+  const app = new ApplicationRunner(page);
+  await app.goToStartPage();
+  await app.enableContinuousMode();
+  await app.start();
+  await app.tick(0, 25);
+  await app.showsTimer(25, 0);
+  await app.showsWorkStatus();
+  await app.showsAvailableBreakTime(0, 5, 0);
+  await app.tick(0, 25);
+  await app.showsTimer(25, 0);
+  await app.showsWorkStatus();
+  await app.showsAvailableBreakTime(0, 10, 0);
+});
+
 class ApplicationRunner {
   constructor(private page: Page) {}
 
@@ -163,6 +178,10 @@ class ApplicationRunner {
     await this.page.getByRole('button', { name: 'Return to work' }).click();
   }
 
+  async enableContinuousMode() {
+    await this.page.getByRole('checkbox', { name: 'Continuous work' }).click();
+  }
+
   async showsTimer(minutes: number, seconds: number) {
     const expectedTime = `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
     await expect(this.page.getByText(new RegExp(`^${expectedTime}$`)), `Timer should show ${expectedTime}`).toBeVisible();
@@ -185,7 +204,7 @@ class ApplicationRunner {
   }
 
   async saveTask(taskName: string) {
-    await this.page.fill('input', taskName);
+    await this.page.fill('input[placeholder="Task name"]', taskName);
     await this.page.click('button:has-text("Add task")');
   }
 

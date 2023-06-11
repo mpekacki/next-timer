@@ -8,6 +8,7 @@ export interface TimerState {
   longBreakCounter: number;
   totalTimeWorkedSeconds: number;
   availableBreakTimeSeconds: number;
+  continousWork: boolean;
   lastTimestamp: number | null;
   tasks: {
     name: string;
@@ -33,6 +34,7 @@ const initialState: TimerState = {
   longBreakCounter: 0,
   totalTimeWorkedSeconds: 0,
   availableBreakTimeSeconds: 0,
+  continousWork: false,
   lastTimestamp: null,
   tasks: [],
   selectedTask: null,
@@ -70,16 +72,22 @@ export const timerSlice = createSlice({
           state.availableBreakTimeSeconds -= decrement
         }
         if (state.seconds === 0) {
+          let newSeconds: number, newPhase : "work" | "break"
           if (state.phase === "work") {
-            state.phase = "break"
             state.longBreakCounter += 1
-            if (state.longBreakCounter === state.settings.longBreakEvery) {
-              state.seconds = state.settings.longBreakSeconds
+            const isLongBreak = state.longBreakCounter === state.settings.longBreakEvery
+            if (isLongBreak) {
               state.longBreakCounter = 0
-              state.availableBreakTimeSeconds = state.settings.longBreakSeconds
+              state.availableBreakTimeSeconds += state.settings.longBreakSeconds
             } else {
-              state.seconds = state.settings.breakSeconds
-              state.availableBreakTimeSeconds = state.settings.breakSeconds
+              state.availableBreakTimeSeconds += state.settings.breakSeconds
+            }
+            if (!state.continousWork) {
+              newPhase = "break"
+              newSeconds = isLongBreak ? state.settings.longBreakSeconds : state.settings.breakSeconds
+            } else {
+              newPhase = "work"
+              newSeconds = state.settings.workSeconds
             }
             state.events.push({
               start: then - state.settings.workSeconds * 1000,
@@ -87,9 +95,11 @@ export const timerSlice = createSlice({
               task: state.selectedTask || ""
             })
           } else {
-            state.phase = "work"
-            state.seconds = state.settings.workSeconds
+            newPhase = "work"
+            newSeconds = state.settings.workSeconds
           }
+          state.phase = newPhase
+          state.seconds = newSeconds
         }
       }
     },
@@ -99,6 +109,13 @@ export const timerSlice = createSlice({
     hold: (state) => {
       state.status = "idle"
       state.lastTimestamp = null
+    },
+    returnToWork: (state) => {
+      state.phase = "work"
+      state.seconds = state.settings.workSeconds
+    },
+    setContinuousWork: (state, action: PayloadAction<boolean>) => {
+      state.continousWork = action.payload
     },
     addTask: (state, action: PayloadAction<string>) => {
       if (state.tasks.find(task => task.name === action.payload)) {
@@ -114,7 +131,7 @@ export const timerSlice = createSlice({
   }
 })
 
-export const { tick, start, hold, addTask, setSelectedTask } = timerSlice.actions
+export const { tick, start, hold, returnToWork, setContinuousWork, addTask, setSelectedTask } = timerSlice.actions
 
 export const selectTime = (state: AppState) => `${String(Math.floor(state.seconds / 60)).padStart(2, "0")}:${String(state.seconds % 60).padStart(2, "0")}`
 export const selectIsIdle = (state: AppState) => state.status === "idle"
@@ -123,6 +140,7 @@ export const selectIsWork = (state: AppState) => state.phase === "work"
 export const selectIsBreak = (state: AppState) => state.phase === "break"
 export const selectTotalTimeWorked = (state: AppState) => `${String(Math.floor(state.totalTimeWorkedSeconds / 60 / 60)).padStart(2, "0")}:${String(Math.floor(state.totalTimeWorkedSeconds / 60) % 60).padStart(2, "0")}:${String(state.totalTimeWorkedSeconds % 60).padStart(2, "0")}`
 export const selectAvailableBreakTime = (state: AppState) => `${String(Math.floor(state.availableBreakTimeSeconds / 60 / 60)).padStart(2, "0")}:${String(Math.floor(state.availableBreakTimeSeconds / 60) % 60).padStart(2, "0")}:${String(state.availableBreakTimeSeconds % 60).padStart(2, "0")}`
+export const selectContinousWork = (state: AppState) => state.continousWork
 export const selectTasks = (state: AppState) => state.tasks
 export const selectSelectedTask = (state: AppState) => state.selectedTask
 export const selectEvents = (state: AppState) => state.events.map(event => ({
