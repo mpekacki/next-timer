@@ -137,7 +137,7 @@ export const timerSlice = createSlice({
 
 export const { tick, start, hold, returnToWork, startBreak, setContinuousWork, addTask, setSelectedTask } = timerSlice.actions
 
-export const selectTime = (state: AppState) => `${String(Math.floor(state.seconds / 60)).padStart(2, "0")}:${String(state.seconds % 60).padStart(2, "0")}`
+export const selectTime = (state: AppState) => ({ minutes: Math.floor(state.seconds / 60), seconds: state.seconds % 60 })
 export const selectIsIdle = (state: AppState) => state.status === "idle"
 export const selectIsRunning = (state: AppState) => state.status === "running"
 export const selectIsWork = (state: AppState) => state.phase === "work"
@@ -152,6 +152,37 @@ export const selectEvents = (state: AppState) => state.events.map(event => ({
   start: new Date(event.start),
   end: new Date(event.end)
 }))
+export const selectEventTotals = (state: AppState): EventTotals => {
+  const now = new Date()
+  const today = new Date(now.getFullYear(), now.getMonth(), now.getDate())
+  const week = new Date(now.getFullYear(), now.getMonth(), now.getDate() - now.getDay())
+  const month = new Date(now.getFullYear(), now.getMonth())
+  const events = state.events.filter(event => event.task)
+  const totals: EventTotals = {}
+  events.forEach(event => {
+    const startDate = new Date(event.start)
+    if (!totals[event.task]) {
+      totals[event.task] = {
+        today: 0,
+        week: 0,
+        month: 0
+      }
+    }
+    if (startDate >= today) {
+      totals[event.task].today += Math.floor((event.end - event.start) / 1000)
+    }
+    if (startDate >= week) {
+      totals[event.task].week += Math.floor((event.end - event.start) / 1000)
+    }
+    if (startDate >= month) {
+      totals[event.task].month += Math.floor((event.end - event.start) / 1000)
+    }
+  })
+  return totals
+}
 export const selectIsBreakAvailable = (state: AppState) => state.availableBreakTimeSeconds > 0
+
+export interface EventTotals { [key: string]: { today: number, week: number, month: number } }
+
 
 export default timerSlice.reducer

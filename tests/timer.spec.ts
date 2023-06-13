@@ -117,6 +117,32 @@ test('log tasks', async ({ page }) => {
   await app.showsEvent('Pet the dog', 12, 30, 12, 55);
   await app.showsEvent('Pet the dog', 13, 0, 13, 25);
   await app.showsEvent('Pet the dog', 13, 30, 13, 55);
+  await app.showsTimeWorkedTodayForTask('Pet the dog', 1, 40);
+  await app.showsTimeWorkedThisWeekForTask('Pet the dog', 1, 40);
+  await app.showsTimeWorkedThisMonthForTask('Pet the dog', 1, 40);
+  await app.hold();
+  await app.jump(0, 60 * 24);
+  await app.start(); // not a great solution, but it works - still, it should be improved 
+                     // (starting the timer causes tick() to happen, which rerenders the component, which updates totals)
+  await app.tick(1);
+  await app.hold();
+  await app.showsTimeWorkedTodayForTask('Pet the dog', 0, 0);
+  await app.showsTimeWorkedThisWeekForTask('Pet the dog', 1, 40);
+  await app.showsTimeWorkedThisMonthForTask('Pet the dog', 1, 40);
+  await app.jump(0, 60 * 24 * 7);
+  await app.start();
+  await app.tick(1);
+  await app.hold();
+  await app.showsTimeWorkedTodayForTask('Pet the dog', 0, 0);
+  await app.showsTimeWorkedThisWeekForTask('Pet the dog', 0, 0);
+  await app.showsTimeWorkedThisMonthForTask('Pet the dog', 1, 40);
+  await app.jump(0, 60 * 24 * 30);
+  await app.start();
+  await app.tick(1);
+  await app.hold();
+  await app.showsTimeWorkedTodayForTask('Pet the dog', 0, 0);
+  await app.showsTimeWorkedThisWeekForTask('Pet the dog', 0, 0);
+  await app.showsTimeWorkedThisMonthForTask('Pet the dog', 0, 0);
 });
 
 test('cut break early', async ({ page }) => {
@@ -257,6 +283,19 @@ class ApplicationRunner {
 
   async showsEvent(taskName: string, startHours: number, startMinutes: number, endHours: number, endMinutes: number) {
     await expect(this.page.getByText(`${taskName} ${String(startHours).padStart(2, '0')}:${String(startMinutes).padStart(2, '0')} - ${String(endHours).padStart(2, '0')}:${String(endMinutes).padStart(2, '0')}`)).toBeVisible();
+  }
+
+  async showsTimeWorkedTodayForTask(taskName: string, hours: number, minutes: number) {
+    // the text is in the format "Task name: today 08:00, week 08:00, month 08:00"
+    await expect(this.page.getByText(new RegExp(`${taskName}: today ${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}, week \\d\\d:\\d\\d, month \\d\\d:\\d\\d`))).toBeVisible();
+  }
+
+  async showsTimeWorkedThisWeekForTask(taskName: string, hours: number, minutes: number) {
+    await expect(this.page.getByText(new RegExp(`${taskName}: today \\d\\d:\\d\\d, week ${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}, month \\d\\d:\\d\\d`))).toBeVisible();
+  }
+
+  async showsTimeWorkedThisMonthForTask(taskName: string, hours: number, minutes: number) {
+    await expect(this.page.getByText(new RegExp(`${taskName}: today \\d\\d:\\d\\d, week \\d\\d:\\d\\d, month ${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}`))).toBeVisible();
   }
 
   async tick(seconds: number, minutes?: number) {

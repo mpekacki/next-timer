@@ -20,7 +20,8 @@ import {
   selectIsBreakAvailable,
   selectTasks,
   selectSelectedTask,
-  selectEvents
+  selectEvents,
+  selectEventTotals
 } from './timerSlice'
 import { useAppDispatch } from '../../hooks'
 
@@ -38,7 +39,8 @@ function Timer() {
 
   const dispatch = useAppDispatch()
 
-  const time = useSelector(selectTime)
+  const time: { minutes: number, seconds: number} = useSelector(selectTime)
+  const timeString = `${time.minutes.toString().padStart(2, '0')}:${time.seconds.toString().padStart(2, '0')}`
   const isIdle = useSelector(selectIsIdle)
   const isRunning = useSelector(selectIsRunning)
   const isWork = useSelector(selectIsWork)
@@ -51,6 +53,7 @@ function Timer() {
   const tasks = useSelector(selectTasks)
   const selectedTask = useSelector(selectSelectedTask)
   const events = useSelector(selectEvents)
+  const eventTotals = useSelector(selectEventTotals)
 
   const [task, setTask] = useState('')
 
@@ -62,7 +65,7 @@ function Timer() {
       {isRunning && <button onClick={() => dispatch(hold())}>Hold</button>}
       {isBreak && <button onClick={() => dispatch(returnToWork())}>Return to work</button>}
       {isWork && isBreakAvailable && <button onClick={() => dispatch(startBreak())}>Break</button>}
-      <div>{time}</div>
+      <div>{timeString}</div>
       <div>{totalTimeWorked}</div>
       <div>{availableBreakTime}</div>
       <div>
@@ -87,6 +90,14 @@ function Timer() {
         <div>
           {events.map((event, index) => (
             <div key={index}>{`${event.task} ${event.start.getUTCHours().toString().padStart(2, '0')}:${event.start.getUTCMinutes().toString().padStart(2, '0')} - ${event.end.getUTCHours().toString().padStart(2, '0')}:${event.end.getUTCMinutes().toString().padStart(2, '0')} ${event.start.getUTCDate().toString().padStart(2, '0')}/${(event.start.getUTCMonth() + 1).toString().padStart(2, '0')}/${event.start.getUTCFullYear()}`}</div>
+          ))}
+        </div>
+      </fieldset>
+      <fieldset>
+        <legend>Event totals</legend>
+        <div>
+          {Object.keys(eventTotals).map((key, index) => (
+            <div key={index}>{`${key}: today ${Math.floor(eventTotals[key].today / 60 / 60).toString().padStart(2, '0')}:${Math.floor(eventTotals[key].today / 60 % 60).toString().padStart(2, '0')}, week ${Math.floor(eventTotals[key].week / 60 / 60).toString().padStart(2, '0')}:${Math.floor(eventTotals[key].week / 60 % 60).toString().padStart(2, '0')}, month ${Math.floor(eventTotals[key].month / 60 / 60).toString().padStart(2, '0')}:${Math.floor(eventTotals[key].month / 60 % 60).toString().padStart(2, '0')}`}</div>
           ))}
         </div>
       </fieldset>
