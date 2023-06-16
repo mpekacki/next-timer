@@ -1,5 +1,6 @@
 import { PayloadAction, createSlice } from "@reduxjs/toolkit";
 import type { AppState } from "../../store";
+import { WritableDraft } from "immer/dist/types/types-external";
 
 export interface TimerState {
   seconds: number;
@@ -91,11 +92,7 @@ export const timerSlice = createSlice({
               newPhase = "work"
               newSeconds = state.settings.workSeconds
             }
-            state.events.push({
-              start: then - state.initialSeconds * 1000,
-              end: then,
-              task: state.selectedTask || ""
-            })
+            addEvent(state, then, state.initialSeconds)
           } else {
             newPhase = "work"
             newSeconds = state.settings.workSeconds
@@ -112,11 +109,7 @@ export const timerSlice = createSlice({
     },
     hold: (state) => {
       state.status = "idle"
-      state.events.push({
-        start: state.lastTimestamp! - (state.initialSeconds - state.seconds) * 1000,
-        end: state.lastTimestamp!,
-        task: state.selectedTask || ""
-      }),
+      addEventForNow(state)
       state.lastTimestamp = null
     },
     returnToWork: (state) => {
@@ -124,11 +117,7 @@ export const timerSlice = createSlice({
       state.seconds = state.settings.workSeconds
     },
     startBreak: (state) => {
-      state.events.push({
-        start: state.lastTimestamp! - (state.initialSeconds - state.seconds) * 1000,
-        end: state.lastTimestamp!,
-        task: state.selectedTask || ""
-      })
+      addEventForNow(state)
       state.phase = "break"
       state.seconds = state.availableBreakTimeSeconds
     },
@@ -154,18 +143,26 @@ export const timerSlice = createSlice({
       })
     },
     setSelectedTask: (state, action: PayloadAction<string>) => {
-      if (state.selectedTask && state.phase === "work" && state.status === "running") {
-        state.events.push({
-          start: state.lastTimestamp! - (state.initialSeconds - state.seconds) * 1000,
-          end: state.lastTimestamp!,
-          task: state.selectedTask
-        })
+      if (state.phase === "work" && state.status === "running") {
+        addEventForNow(state);
       }
       state.selectedTask = action.payload
       state.initialSeconds = state.seconds
     }
   }
 })
+
+function addEventForNow(state: WritableDraft<TimerState>) {
+  addEvent(state, state.lastTimestamp!, state.initialSeconds - state.seconds)
+}
+
+function addEvent(state: WritableDraft<TimerState>, then: number, seconds: number) {
+  state.events.push({
+    start: then - seconds * 1000,
+    end: then,
+    task: state.selectedTask || ""
+  })
+}
 
 export const { tick, start, hold, returnToWork, startBreak, reset, setContinuousWork, addTask, setSelectedTask } = timerSlice.actions
 
