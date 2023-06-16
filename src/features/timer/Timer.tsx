@@ -6,6 +6,7 @@ import {
   hold,
   returnToWork,
   startBreak,
+  reset,
   setContinuousWork,
   addTask,
   setSelectedTask,
@@ -65,6 +66,7 @@ function Timer() {
       {isRunning && <button onClick={() => dispatch(hold())}>Hold</button>}
       {isBreak && <button onClick={() => dispatch(returnToWork())}>Return to work</button>}
       {isWork && isBreakAvailable && <button onClick={() => dispatch(startBreak())}>Break</button>}
+      <button onClick={() => dispatch(reset())}>Reset</button>
       <div>{timeString}</div>
       <div>{totalTimeWorked}</div>
       <div>{availableBreakTime}</div>

@@ -217,6 +217,25 @@ test('go on a break if available', async ({ page }) => {
   await app.doesNotShowBreakButton();
 });
 
+test('reset' , async ({ page }) => {
+  const app = new ApplicationRunner(page);
+  await app.goToStartPage();
+  await app.enableContinuousMode();
+  await app.start();
+  await app.tick(0, 25);
+  await app.showsTimer(25, 0);
+  await app.showsWorkStatus();
+  await app.showsAvailableBreakTime(0, 5, 0);
+  await app.showsTotalTimeWorked(0, 25, 0);
+  await app.tick(0, 10);
+  await app.showsTimer(15, 0);
+  await app.reset();
+  await app.showsTimer(25, 0);
+  await app.showsWorkStatus();
+  await app.showsAvailableBreakTime(0, 0, 0);
+  await app.showsTotalTimeWorked(0, 0, 0);
+});
+
 
 class ApplicationRunner {
   constructor(private page: Page) {}
@@ -255,6 +274,10 @@ class ApplicationRunner {
 
   async returnToWork() {
     await this.page.getByRole('button', { name: 'Return to work' }).click();
+  }
+
+  async reset() {
+    await this.page.getByRole('button', { name: 'Reset' }).click();
   }
 
   async enableContinuousMode() {
