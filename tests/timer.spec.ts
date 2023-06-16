@@ -107,6 +107,8 @@ test('jump in time', async ({ page }) => {
 test('log tasks', async ({ page }) => {
   const app = new ApplicationRunner(page);
   await app.goToStartPage();
+  await app.showsTask('No task');
+  await app.showsTaskAsSelected('No task');
   await app.saveTask('Pet the dog');
   await app.showsTask('Pet the dog');
   await app.selectTask('Pet the dog');
@@ -327,7 +329,7 @@ class ApplicationRunner {
   }
 
   async showsTaskAsSelected(taskName: string) {
-    await expect(this.page.getByText(taskName)).toHaveClass('selected');
+    await expect(this.page.locator('div').filter({ hasText: new RegExp(`^${taskName}$`) }).getByRole('radio')).toBeChecked();
   }
 
   async showsEvent(taskName: string, startHours: number, startMinutes: number, endHours: number, endMinutes: number) {

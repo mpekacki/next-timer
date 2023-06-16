@@ -15,7 +15,7 @@ export interface TimerState {
   tasks: {
     name: string;
   }[];
-  selectedTask: string | null;
+  selectedTask: string;
   events: {
     start: number;
     end: number;
@@ -39,8 +39,8 @@ const initialState: TimerState = {
   continousWork: false,
   lastTimestamp: null,
   initialSeconds: 25 * 60,
-  tasks: [],
-  selectedTask: null,
+  tasks: [{ name: 'No task'}],
+  selectedTask: 'No task',
   events: [],
   settings: {
     workSeconds: 25 * 60,
@@ -160,7 +160,7 @@ function addEvent(state: WritableDraft<TimerState>, then: number, seconds: numbe
   state.events.push({
     start: then - seconds * 1000,
     end: then,
-    task: state.selectedTask || ""
+    task: state.selectedTask
   })
 }
 
