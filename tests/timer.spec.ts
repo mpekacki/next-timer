@@ -145,6 +145,32 @@ test('log tasks', async ({ page }) => {
   await app.showsTimeWorkedThisMonthForTask('Pet the dog', 0, 0);
 });
 
+test('log partial tasks', async ({ page }) => {
+  const app = new ApplicationRunner(page);
+  await app.goToStartPage();
+  await app.enableContinuousMode();
+  await app.saveTask('Pet the dog');
+  await app.saveTask('Play games');
+  await app.selectTask('Pet the dog');
+  await app.start();
+  await app.tick(0, 10);
+  await app.selectTask('Play games');
+  await app.showsTimeWorkedTodayForTask('Pet the dog', 0, 10);
+  await app.tick(0, 15);
+  await app.showsTimeWorkedTodayForTask('Play games', 0, 15);
+  await app.tick(0, 10);
+  await app.hold();
+  await app.showsTimeWorkedTodayForTask('Play games', 0, 25);
+  await app.tick(0, 5);
+  await app.showsTimeWorkedTodayForTask('Play games', 0, 25);
+  await app.start();
+  await app.tick(0, 15);
+  await app.showsTimeWorkedTodayForTask('Play games', 0, 40);
+  await app.tick(0, 15);
+  await app.break();
+  await app.showsTimeWorkedTodayForTask('Play games', 0, 55);
+});
+
 test('cut break early', async ({ page }) => {
   const app = new ApplicationRunner(page);
   await app.goToStartPage();

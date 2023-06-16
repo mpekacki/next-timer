@@ -10,6 +10,7 @@ export interface TimerState {
   availableBreakTimeSeconds: number;
   continousWork: boolean;
   lastTimestamp: number | null;
+  initialSeconds: number;
   tasks: {
     name: string;
   }[];
@@ -36,6 +37,7 @@ const initialState: TimerState = {
   availableBreakTimeSeconds: 0,
   continousWork: false,
   lastTimestamp: null,
+  initialSeconds: 25 * 60,
   tasks: [],
   selectedTask: null,
   events: [],
@@ -90,7 +92,7 @@ export const timerSlice = createSlice({
               newSeconds = state.settings.workSeconds
             }
             state.events.push({
-              start: then - state.settings.workSeconds * 1000,
+              start: then - state.initialSeconds * 1000,
               end: then,
               task: state.selectedTask || ""
             })
@@ -100,14 +102,21 @@ export const timerSlice = createSlice({
           }
           state.phase = newPhase
           state.seconds = newSeconds
+          state.initialSeconds = newSeconds
         }
       }
     },
     start: (state) => {
-      state.status = "running"
+      state.status = "running",
+      state.initialSeconds = state.seconds
     },
     hold: (state) => {
       state.status = "idle"
+      state.events.push({
+        start: state.lastTimestamp! - (state.initialSeconds - state.seconds) * 1000,
+        end: state.lastTimestamp!,
+        task: state.selectedTask || ""
+      }),
       state.lastTimestamp = null
     },
     returnToWork: (state) => {
@@ -115,6 +124,11 @@ export const timerSlice = createSlice({
       state.seconds = state.settings.workSeconds
     },
     startBreak: (state) => {
+      state.events.push({
+        start: state.lastTimestamp! - (state.initialSeconds - state.seconds) * 1000,
+        end: state.lastTimestamp!,
+        task: state.selectedTask || ""
+      })
       state.phase = "break"
       state.seconds = state.availableBreakTimeSeconds
     },
@@ -130,7 +144,15 @@ export const timerSlice = createSlice({
       })
     },
     setSelectedTask: (state, action: PayloadAction<string>) => {
+      if (state.selectedTask && state.phase === "work" && state.status === "running") {
+        state.events.push({
+          start: state.lastTimestamp! - (state.initialSeconds - state.seconds) * 1000,
+          end: state.lastTimestamp!,
+          task: state.selectedTask
+        })
+      }
       state.selectedTask = action.payload
+      state.initialSeconds = state.seconds
     }
   }
 })
