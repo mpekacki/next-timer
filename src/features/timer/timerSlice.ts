@@ -153,7 +153,7 @@ export const selectEvents = (state: AppState) => state.events.map(event => ({
   end: new Date(event.end)
 }))
 export const selectEventTotals = (state: AppState): EventTotals => {
-  const now = new Date()
+  const now = new Date() // this shouldn't be done in a selector, should be coming from the outside
   const today = new Date(now.getFullYear(), now.getMonth(), now.getDate())
   const week = new Date(now.getFullYear(), now.getMonth(), now.getDate() - now.getDay())
   const month = new Date(now.getFullYear(), now.getMonth())

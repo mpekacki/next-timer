@@ -52,7 +52,7 @@ function Timer() {
   const isBreakAvailable = useSelector(selectIsBreakAvailable)
   const tasks = useSelector(selectTasks)
   const selectedTask = useSelector(selectSelectedTask)
-  const events = useSelector(selectEvents)
+  // const events = useSelector(selectEvents)
   const eventTotals = useSelector(selectEventTotals)
 
   const [task, setTask] = useState('')
@@ -85,14 +85,14 @@ function Timer() {
           ))}
         </div>
       </fieldset>
-      <fieldset>
+      {/* <fieldset>
         <legend>Events</legend>
         <div>
           {events.map((event, index) => (
             <div key={index}>{`${event.task} ${event.start.getUTCHours().toString().padStart(2, '0')}:${event.start.getUTCMinutes().toString().padStart(2, '0')} - ${event.end.getUTCHours().toString().padStart(2, '0')}:${event.end.getUTCMinutes().toString().padStart(2, '0')} ${event.start.getUTCDate().toString().padStart(2, '0')}/${(event.start.getUTCMonth() + 1).toString().padStart(2, '0')}/${event.start.getUTCFullYear()}`}</div>
           ))}
         </div>
-      </fieldset>
+      </fieldset> */}
       <fieldset>
         <legend>Event totals</legend>
         <div>
