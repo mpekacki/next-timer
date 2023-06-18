@@ -40,6 +40,8 @@ function Timer() {
 
   const dispatch = useAppDispatch()
 
+  const [task, setTask] = useState('')
+
   const time: { minutes: number, seconds: number} = useSelector(selectTime)
   const timeString = `${time.minutes.toString().padStart(2, '0')}:${time.seconds.toString().padStart(2, '0')}`
   const isIdle = useSelector(selectIsIdle)
@@ -51,12 +53,11 @@ function Timer() {
   const availableBreakTime = `Available break time: ${useSelector(selectAvailableBreakTime)}`
   const continuousWork = useSelector(selectContinousWork)
   const isBreakAvailable = useSelector(selectIsBreakAvailable)
-  const tasks = useSelector(selectTasks)
+  const tasks = useSelector(selectTasks).filter(savedTask => !task || savedTask.name === 'No task' || savedTask.name.toUpperCase().includes(task.toUpperCase()))
   const selectedTask = useSelector(selectSelectedTask)
   // const events = useSelector(selectEvents)
   const eventTotals = useSelector(selectEventTotals)
 
-  const [task, setTask] = useState('')
 
   return (
     <div>
@@ -75,7 +76,7 @@ function Timer() {
         <label htmlFor="continuousWork">Continuous work</label>
       </div>
       <input type="text" value={task} onChange={e => setTask(e.target.value)} placeholder="Task name" />
-      {task && <button onClick={() => dispatch(addTask(task))}>Add task</button>}
+      {task && <button onClick={() => { dispatch(addTask(task)); setTask(''); }}>Add task</button>}
       <fieldset>
         <legend>Tasks</legend>
         <div>

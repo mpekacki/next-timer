@@ -173,6 +173,33 @@ test('log partial tasks', async ({ page }) => {
   await app.showsTimeWorkedTodayForTask('Play games', 0, 55);
 });
 
+test('search tasks', async ({ page }) => {
+  const app = new ApplicationRunner(page);
+  await app.goToStartPage();
+  await app.saveTask('Pet the dog');
+  await app.saveTask('Play games');
+  await app.saveTask('Walk with dog');
+  await app.showsTask('No task');
+  await app.showsTask('Pet the dog');
+  await app.showsTask('Play games');
+  await app.showsTask('Walk with dog');
+  await app.fillTaskName('dog');
+  await app.showsTask('Pet the dog');
+  await app.showsTask('Walk with dog');
+  await app.showsTask('No task');
+  await app.doesNotShowTask('Play games');
+  await app.fillTaskName('play');
+  await app.showsTask('Play games');
+  await app.showsTask('No task');
+  await app.doesNotShowTask('Pet the dog');
+  await app.doesNotShowTask('Walk with dog');
+  await app.fillTaskName('');
+  await app.showsTask('No task');
+  await app.showsTask('Pet the dog');
+  await app.showsTask('Play games');
+  await app.showsTask('Walk with dog');
+});
+
 test('cut break early', async ({ page }) => {
   const app = new ApplicationRunner(page);
   await app.goToStartPage();
@@ -315,8 +342,12 @@ class ApplicationRunner {
     await expect(this.getBreakButton()).toBeVisible();
   }
 
-  async saveTask(taskName: string) {
+  async fillTaskName(taskName: string) {
     await this.page.fill('input[placeholder="Task name"]', taskName);
+  }
+
+  async saveTask(taskName: string) {
+    await this.fillTaskName(taskName);
     await this.page.click('button:has-text("Add task")');
   }
 
@@ -326,6 +357,10 @@ class ApplicationRunner {
 
   async showsTask(taskName: string) {
     await expect(this.page.getByText(taskName)).toBeVisible();
+  }
+
+  async doesNotShowTask(taskName: string) {
+    await expect(this.page.getByText(taskName)).not.toBeVisible();
   }
 
   async showsTaskAsSelected(taskName: string) {

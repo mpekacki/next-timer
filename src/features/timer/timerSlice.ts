@@ -138,9 +138,7 @@ export const timerSlice = createSlice({
       if (state.tasks.find(task => task.name === action.payload)) {
         return
       }
-      state.tasks.push({
-        name: action.payload
-      })
+      state.tasks.splice(1, 0, { name: action.payload })
     },
     setSelectedTask: (state, action: PayloadAction<string>) => {
       if (state.phase === "work" && state.status === "running") {
