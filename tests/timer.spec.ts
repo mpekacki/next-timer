@@ -135,6 +135,8 @@ test('log tasks', async ({ page }) => {
   await app.showsTimeWorkedTodayForTask('Pet the dog', 0, 0);
   await app.showsTimeWorkedThisWeekForTask('Pet the dog', 0, 0);
   await app.showsTimeWorkedThisMonthForTask('Pet the dog', 0, 0);
+  await app.setCustomSummaryDateRange(2023, 6, 9, 2023, 6, 9);
+  await app.showsTimeWorkedForCustomPeriodForTask('Pet the dog', 1, 40);
 });
 
 test('log partial tasks', async ({ page }) => {
@@ -346,7 +348,13 @@ class ApplicationRunner {
   }
 
   async setCustomSummaryDateRange(startYear: number, startMonth: number, startDay: number, endYear: number, endMonth: number, endDay: number) {
-    
+    const customFromInput = await this.page.$('label:has-text("Custom from") + input[type="date"]');
+    const customToInput = await this.page.$('label:has-text("Custom to") + input[type="date"]');
+    if (!customFromInput || !customToInput) {
+      throw new Error('Could not find custom date inputs');
+    }
+    await customFromInput.fill(`${startYear}-${String(startMonth).padStart(2, '0')}-${String(startDay).padStart(2, '0')}`);
+    await customToInput.fill(`${endYear}-${String(endMonth).padStart(2, '0')}-${String(endDay).padStart(2, '0')}`);
   }
 
   async showsTask(taskName: string) {
@@ -376,6 +384,10 @@ class ApplicationRunner {
 
   async showsTimeWorkedThisMonthForTask(taskName: string, hours: number, minutes: number) {
     await expect(this.page.getByText(new RegExp(`${taskName}: today \\d\\d:\\d\\d, week \\d\\d:\\d\\d, month ${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}`))).toBeVisible();
+  }
+
+  async showsTimeWorkedForCustomPeriodForTask(taskName: string, hours: number, minutes: number) {
+    await expect(this.page.getByText(new RegExp(`${taskName}: today \\d\\d:\\d\\d, week \\d\\d:\\d\\d, month \\d\\d:\\d\\d, custom ${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}`))).toBeVisible();
   }
 
   async tick(seconds: number, minutes?: number) {

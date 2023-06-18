@@ -25,7 +25,7 @@ import {
 } from './timerSlice'
 import { useAppDispatch } from '../../hooks'
 
-interface EventTotals { [key: string]: { today: number, week: number, month: number } }
+interface EventTotals { [key: string]: { today: number, week: number, month: number, custom: number } }
 
 function Timer() {
   const dispatch = useAppDispatch()
@@ -48,11 +48,12 @@ function Timer() {
   const events = useSelector(selectEvents)
   const eventsLength = events.length
   const [eventTotals, setEventTotals] = useState<EventTotals>({})
-
   const [yearNow, setYearNow] = useState(new Date().getUTCFullYear())
   const [monthNow, setMonthNow] = useState(new Date().getUTCMonth())
   const [dateNow, setDateNow] = useState(new Date().getUTCDate())
   const [dayNow, setDayNow] = useState(new Date().getUTCDay())
+  const [customFromDate, setCustomFromDate] = useState(new Date().toISOString().slice(0, 10))
+  const [customToDate, setCustomToDate] = useState(new Date().toISOString().slice(0, 10))
 
   function Ticker() {
     const dispatch = useAppDispatch()
@@ -87,13 +88,19 @@ function Timer() {
     const today = new Date(yearNow, monthNow, dateNow)
     const week = new Date(yearNow, monthNow, dateNow - dayNow)
     const month = new Date(yearNow, monthNow)
+    const customFrom = new Date(customFromDate)
+    customFrom.setUTCHours(0, 0, 0, 0)
+    const customTo = new Date(customToDate)
+    customTo.setUTCHours(23, 59, 59, 999)
     events.forEach(event => {
       const startDate = new Date(event.start)
+      const endDate = new Date(event.end)
       if (!newEventTotals[event.task]) {
         newEventTotals[event.task] = {
           today: 0,
           week: 0,
-          month: 0
+          month: 0,
+          custom: 0
         }
       }
       const eventLength = Math.floor((event.end.getTime() - event.start.getTime()) / 1000)
@@ -106,9 +113,12 @@ function Timer() {
       if (startDate >= month) {
         newEventTotals[event.task].month += eventLength
       }
+      if (startDate >= customFrom && endDate <= customTo) {
+        newEventTotals[event.task].custom += eventLength
+      }
     })
     setEventTotals(newEventTotals)
-  }, [eventsLength, yearNow, monthNow, dateNow, dayNow])
+  }, [eventsLength, yearNow, monthNow, dateNow, dayNow, customFromDate, customToDate ])
 
 
   return (
@@ -152,16 +162,16 @@ function Timer() {
         <legend>Event totals</legend>
         <div>
           {Object.keys(eventTotals).map((key, index) => (
-            <div key={index}>{`${key}: today ${Math.floor(eventTotals[key].today / 60 / 60).toString().padStart(2, '0')}:${Math.floor(eventTotals[key].today / 60 % 60).toString().padStart(2, '0')}, week ${Math.floor(eventTotals[key].week / 60 / 60).toString().padStart(2, '0')}:${Math.floor(eventTotals[key].week / 60 % 60).toString().padStart(2, '0')}, month ${Math.floor(eventTotals[key].month / 60 / 60).toString().padStart(2, '0')}:${Math.floor(eventTotals[key].month / 60 % 60).toString().padStart(2, '0')}`}</div>
+            <div key={index}>{`${key}: today ${Math.floor(eventTotals[key].today / 60 / 60).toString().padStart(2, '0')}:${Math.floor(eventTotals[key].today / 60 % 60).toString().padStart(2, '0')}, week ${Math.floor(eventTotals[key].week / 60 / 60).toString().padStart(2, '0')}:${Math.floor(eventTotals[key].week / 60 % 60).toString().padStart(2, '0')}, month ${Math.floor(eventTotals[key].month / 60 / 60).toString().padStart(2, '0')}:${Math.floor(eventTotals[key].month / 60 % 60).toString().padStart(2, '0')}, custom ${Math.floor(eventTotals[key].custom / 60 / 60).toString().padStart(2, '0')}:${Math.floor(eventTotals[key].custom / 60 % 60).toString().padStart(2, '0')}`}</div>
           ))}
         </div>
         <div>
           <label>Custom from</label>
-          <input type="date" />
+          <input type="date" value={customFromDate} onChange={e => setCustomFromDate(e.target.value)} />
         </div>
         <div>
           <label>Custom to</label>
-          <input type="date" />
+          <input type="date" value={customToDate} onChange={e => setCustomToDate(e.target.value)} />
         </div>
       </fieldset>
     </div>
