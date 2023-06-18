@@ -179,37 +179,7 @@ export const selectEvents = (state: AppState) => state.events.map(event => ({
   start: new Date(event.start),
   end: new Date(event.end)
 }))
-export const selectEventTotals = (state: AppState): EventTotals => {
-  const now = new Date() // this shouldn't be done in a selector, should be coming from the outside
-  const today = new Date(now.getFullYear(), now.getMonth(), now.getDate())
-  const week = new Date(now.getFullYear(), now.getMonth(), now.getDate() - now.getDay())
-  const month = new Date(now.getFullYear(), now.getMonth())
-  const events = state.events.filter(event => event.task)
-  const totals: EventTotals = {}
-  events.forEach(event => {
-    const startDate = new Date(event.start)
-    if (!totals[event.task]) {
-      totals[event.task] = {
-        today: 0,
-        week: 0,
-        month: 0
-      }
-    }
-    if (startDate >= today) {
-      totals[event.task].today += Math.floor((event.end - event.start) / 1000)
-    }
-    if (startDate >= week) {
-      totals[event.task].week += Math.floor((event.end - event.start) / 1000)
-    }
-    if (startDate >= month) {
-      totals[event.task].month += Math.floor((event.end - event.start) / 1000)
-    }
-  })
-  return totals
-}
 export const selectIsBreakAvailable = (state: AppState) => state.availableBreakTimeSeconds > 0
-
-export interface EventTotals { [key: string]: { today: number, week: number, month: number } }
 
 
 export default timerSlice.reducer

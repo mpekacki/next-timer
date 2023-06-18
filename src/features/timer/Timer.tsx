@@ -21,28 +21,18 @@ import {
   selectIsBreakAvailable,
   selectTasks,
   selectSelectedTask,
-  selectEvents,
-  selectEventTotals
+  selectEvents
 } from './timerSlice'
 import { useAppDispatch } from '../../hooks'
 
+interface EventTotals { [key: string]: { today: number, week: number, month: number } }
+
 function Timer() {
-  function Ticker() {
-    const dispatch = useAppDispatch()
-
-    useEffect(() => {
-      const timer = setInterval(() => dispatch(tick(Date.now())), 1000)
-      return () => clearInterval(timer)
-    }, [dispatch])
-
-    return null
-  }
-
   const dispatch = useAppDispatch()
 
   const [task, setTask] = useState('')
 
-  const time: { minutes: number, seconds: number} = useSelector(selectTime)
+  const time: { minutes: number, seconds: number } = useSelector(selectTime)
   const timeString = `${time.minutes.toString().padStart(2, '0')}:${time.seconds.toString().padStart(2, '0')}`
   const isIdle = useSelector(selectIsIdle)
   const isRunning = useSelector(selectIsRunning)
@@ -55,14 +45,76 @@ function Timer() {
   const isBreakAvailable = useSelector(selectIsBreakAvailable)
   const tasks = useSelector(selectTasks).filter(savedTask => !task || savedTask.name === 'No task' || savedTask.name.toUpperCase().includes(task.toUpperCase()))
   const selectedTask = useSelector(selectSelectedTask)
-  // const events = useSelector(selectEvents)
-  const eventTotals = useSelector(selectEventTotals)
+  const events = useSelector(selectEvents)
+  const eventsLength = events.length
+  const [eventTotals, setEventTotals] = useState<EventTotals>({})
+
+  const [yearNow, setYearNow] = useState(new Date().getUTCFullYear())
+  const [monthNow, setMonthNow] = useState(new Date().getUTCMonth())
+  const [dateNow, setDateNow] = useState(new Date().getUTCDate())
+  const [dayNow, setDayNow] = useState(new Date().getUTCDay())
+
+  function Ticker() {
+    const dispatch = useAppDispatch()
+
+    useEffect(() => {
+      const timer = setInterval(() => {
+        const now = new Date()
+        if (isRunning) {
+          dispatch(tick(now.getTime()))
+        }
+        if (now.getUTCFullYear() !== yearNow) {
+          setYearNow(now.getUTCFullYear())
+        }
+        if (now.getUTCMonth() !== monthNow) {
+          setMonthNow(now.getUTCMonth())
+        }
+        if (now.getUTCDate() !== dateNow) {
+          setDateNow(now.getUTCDate())
+        }
+        if (now.getUTCDay() !== dayNow) {
+          setDayNow(now.getUTCDay())
+        }
+      }, 1000)
+      return () => clearInterval(timer)
+    }, [dispatch, isRunning])
+
+    return null
+  }
+
+  useEffect(() => {
+    const newEventTotals: EventTotals = {}
+    const today = new Date(yearNow, monthNow, dateNow)
+    const week = new Date(yearNow, monthNow, dateNow - dayNow)
+    const month = new Date(yearNow, monthNow)
+    events.forEach(event => {
+      const startDate = new Date(event.start)
+      if (!newEventTotals[event.task]) {
+        newEventTotals[event.task] = {
+          today: 0,
+          week: 0,
+          month: 0
+        }
+      }
+      const eventLength = Math.floor((event.end.getTime() - event.start.getTime()) / 1000)
+      if (startDate >= today) {
+        newEventTotals[event.task].today += eventLength
+      }
+      if (startDate >= week) {
+        newEventTotals[event.task].week += eventLength
+      }
+      if (startDate >= month) {
+        newEventTotals[event.task].month += eventLength
+      }
+    })
+    setEventTotals(newEventTotals)
+  }, [eventsLength, yearNow, monthNow, dateNow, dayNow])
 
 
   return (
     <div>
       <div>{phase}</div>
-      {isRunning && <Ticker />}
+      <Ticker />
       {isIdle && <button onClick={() => dispatch(start())}>Start</button>}
       {isRunning && <button onClick={() => dispatch(hold())}>Hold</button>}
       {isBreak && <button onClick={() => dispatch(returnToWork())}>Return to work</button>}
@@ -102,6 +154,14 @@ function Timer() {
           {Object.keys(eventTotals).map((key, index) => (
             <div key={index}>{`${key}: today ${Math.floor(eventTotals[key].today / 60 / 60).toString().padStart(2, '0')}:${Math.floor(eventTotals[key].today / 60 % 60).toString().padStart(2, '0')}, week ${Math.floor(eventTotals[key].week / 60 / 60).toString().padStart(2, '0')}:${Math.floor(eventTotals[key].week / 60 % 60).toString().padStart(2, '0')}, month ${Math.floor(eventTotals[key].month / 60 / 60).toString().padStart(2, '0')}:${Math.floor(eventTotals[key].month / 60 % 60).toString().padStart(2, '0')}`}</div>
           ))}
+        </div>
+        <div>
+          <label>Custom from</label>
+          <input type="date" />
+        </div>
+        <div>
+          <label>Custom to</label>
+          <input type="date" />
         </div>
       </fieldset>
     </div>

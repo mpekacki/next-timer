@@ -124,24 +124,14 @@ test('log tasks', async ({ page }) => {
   await app.showsTimeWorkedThisMonthForTask('Pet the dog', 1, 40);
   await app.hold();
   await app.jump(0, 60 * 24);
-  await app.start(); // not a great solution, but it works - still, it should be improved 
-                     // (starting the timer causes tick() to happen, which rerenders the component, which updates totals)
-  await app.tick(1);
-  await app.hold();
   await app.showsTimeWorkedTodayForTask('Pet the dog', 0, 0);
   await app.showsTimeWorkedThisWeekForTask('Pet the dog', 1, 40);
   await app.showsTimeWorkedThisMonthForTask('Pet the dog', 1, 40);
   await app.jump(0, 60 * 24 * 7);
-  await app.start();
-  await app.tick(1);
-  await app.hold();
   await app.showsTimeWorkedTodayForTask('Pet the dog', 0, 0);
   await app.showsTimeWorkedThisWeekForTask('Pet the dog', 0, 0);
   await app.showsTimeWorkedThisMonthForTask('Pet the dog', 1, 40);
   await app.jump(0, 60 * 24 * 30);
-  await app.start();
-  await app.tick(1);
-  await app.hold();
   await app.showsTimeWorkedTodayForTask('Pet the dog', 0, 0);
   await app.showsTimeWorkedThisWeekForTask('Pet the dog', 0, 0);
   await app.showsTimeWorkedThisMonthForTask('Pet the dog', 0, 0);
@@ -353,6 +343,10 @@ class ApplicationRunner {
 
   async selectTask(taskName: string) {
     await this.page.locator('div').filter({ hasText: new RegExp(`^${taskName}$`) }).getByRole('radio').check();
+  }
+
+  async setCustomSummaryDateRange(startYear: number, startMonth: number, startDay: number, endYear: number, endMonth: number, endDay: number) {
+    
   }
 
   async showsTask(taskName: string) {
