@@ -344,7 +344,7 @@ class ApplicationRunner {
   }
 
   async selectTask(taskName: string) {
-    await this.page.locator('div').filter({ hasText: new RegExp(`^${taskName}$`) }).getByRole('radio').check();
+    await this.page.locator('div').filter({ hasText: new RegExp(`^${taskName}$`) }).getByRole('radio').click();
   }
 
   async setCustomSummaryDateRange(startYear: number, startMonth: number, startDay: number, endYear: number, endMonth: number, endDay: number) {

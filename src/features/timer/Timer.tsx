@@ -144,8 +144,8 @@ function Timer() {
         <div>
           {tasks.map((task, index) => (
             <div key={index}>
-              <input type="radio" name="task" value={task.name} checked={selectedTask === task.name} onChange={() => dispatch(setSelectedTask(task.name))} />
-              <label>{task.name}</label>
+              <input type="radio" name={task.name} id={task.name} value={task.name} checked={selectedTask === task.name} onChange={() => dispatch(setSelectedTask(task.name))} />
+              <label htmlFor={task.name}>{task.name}</label>
             </div>
           ))}
         </div>

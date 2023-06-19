@@ -142,7 +142,7 @@ export const timerSlice = createSlice({
     },
     setSelectedTask: (state, action: PayloadAction<string>) => {
       if (state.phase === "work" && state.status === "running") {
-        addEventForNow(state);
+        addEventForNow(state, false);
       }
       state.selectedTask = action.payload
       state.initialSeconds = state.seconds
@@ -150,16 +150,25 @@ export const timerSlice = createSlice({
   }
 })
 
-function addEventForNow(state: WritableDraft<TimerState>) {
-  addEvent(state, state.lastTimestamp!, state.initialSeconds - state.seconds)
+function addEventForNow(state: WritableDraft<TimerState>, moveTask = true) {
+  addEvent(state, state.lastTimestamp!, state.initialSeconds - state.seconds, moveTask)
 }
 
-function addEvent(state: WritableDraft<TimerState>, then: number, seconds: number) {
+function addEvent(state: WritableDraft<TimerState>, then: number, seconds: number, moveTask = true) {
   state.events.push({
     start: then - seconds * 1000,
     end: then,
     task: state.selectedTask
   })
+  if (moveTask) {
+    // move task to second position
+    const index = state.tasks.findIndex(task => task.name === state.selectedTask)
+    if (index > 1) {
+      const task = state.tasks[index]
+      state.tasks.splice(index, 1)
+      state.tasks.splice(1, 0, task)
+    }
+  }
 }
 
 export const { tick, start, hold, returnToWork, startBreak, reset, setContinuousWork, addTask, setSelectedTask } = timerSlice.actions
