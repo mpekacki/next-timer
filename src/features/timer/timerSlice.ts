@@ -115,6 +115,7 @@ export const timerSlice = createSlice({
     returnToWork: (state) => {
       state.phase = "work"
       state.seconds = state.settings.workSeconds
+      state.initialSeconds = state.settings.workSeconds
     },
     startBreak: (state) => {
       addEventForNow(state)

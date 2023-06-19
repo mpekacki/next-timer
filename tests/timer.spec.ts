@@ -161,8 +161,13 @@ test('log partial tasks', async ({ page }) => {
   await app.tick(0, 15);
   await app.showsTimeWorkedTodayForTask('Play games', 0, 40);
   await app.tick(0, 15);
-  await app.break();
+  await app.selectTask('Pet the dog');
   await app.showsTimeWorkedTodayForTask('Play games', 0, 55);
+  await app.break();
+  await app.returnToWork();
+  await app.tick(0, 15);
+  await app.break();
+  await app.showsTimeWorkedTodayForTask('Pet the dog', 0, 25);
 });
 
 test('search tasks', async ({ page }) => {
