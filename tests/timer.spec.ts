@@ -373,21 +373,38 @@ class ApplicationRunner {
     await expect(this.page.getByText(`${taskName} ${String(startHours).padStart(2, '0')}:${String(startMinutes).padStart(2, '0')} - ${String(endHours).padStart(2, '0')}:${String(endMinutes).padStart(2, '0')}`)).toBeVisible();
   }
 
+  async validateNthTotalSlot(taskName: string, nth: number, hours: number, minutes: number) {
+    // Find the table cell with the task name
+    const taskNameCell = await this.page.waitForSelector(`td:has-text("${taskName}")`);
+
+    // Find the corresponding time cell in the "Total" column
+    const totalCell = await taskNameCell.$(`xpath=../td[${nth}]`);
+
+    if (!totalCell) {
+      throw new Error(`Could not find total cell for ${nth}th column`);
+    }
+
+    // Retrieve the time value
+    const total = await totalCell.innerText();
+
+    // Check that the time value is correct
+    expect(total).toMatch(new RegExp(`${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}`));
+  }
+
   async showsTimeWorkedTodayForTask(taskName: string, hours: number, minutes: number) {
-    // the text is in the format "Task name: today 08:00, week 08:00, month 08:00"
-    await expect(this.page.getByText(new RegExp(`${taskName}: today ${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}, week \\d\\d:\\d\\d, month \\d\\d:\\d\\d`))).toBeVisible();
+    await this.validateNthTotalSlot(taskName, 2, hours, minutes);
   }
 
   async showsTimeWorkedThisWeekForTask(taskName: string, hours: number, minutes: number) {
-    await expect(this.page.getByText(new RegExp(`${taskName}: today \\d\\d:\\d\\d, week ${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}, month \\d\\d:\\d\\d`))).toBeVisible();
+    await this.validateNthTotalSlot(taskName, 3, hours, minutes);
   }
 
   async showsTimeWorkedThisMonthForTask(taskName: string, hours: number, minutes: number) {
-    await expect(this.page.getByText(new RegExp(`${taskName}: today \\d\\d:\\d\\d, week \\d\\d:\\d\\d, month ${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}`))).toBeVisible();
+    await this.validateNthTotalSlot(taskName, 4, hours, minutes);
   }
 
   async showsTimeWorkedForCustomPeriodForTask(taskName: string, hours: number, minutes: number) {
-    await expect(this.page.getByText(new RegExp(`${taskName}: today \\d\\d:\\d\\d, week \\d\\d:\\d\\d, month \\d\\d:\\d\\d, custom ${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}`))).toBeVisible();
+    await this.validateNthTotalSlot(taskName, 5, hours, minutes);
   }
 
   async tick(seconds: number, minutes?: number) {

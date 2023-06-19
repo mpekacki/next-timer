@@ -118,7 +118,7 @@ function Timer() {
       }
     })
     setEventTotals(newEventTotals)
-  }, [eventsLength, yearNow, monthNow, dateNow, dayNow, customFromDate, customToDate ])
+  }, [eventsLength, yearNow, monthNow, dateNow, dayNow, customFromDate, customToDate])
 
 
   return (
@@ -150,21 +150,30 @@ function Timer() {
           ))}
         </div>
       </fieldset>
-      {/* <fieldset>
-        <legend>Events</legend>
-        <div>
-          {events.map((event, index) => (
-            <div key={index}>{`${event.task} ${event.start.getUTCHours().toString().padStart(2, '0')}:${event.start.getUTCMinutes().toString().padStart(2, '0')} - ${event.end.getUTCHours().toString().padStart(2, '0')}:${event.end.getUTCMinutes().toString().padStart(2, '0')} ${event.start.getUTCDate().toString().padStart(2, '0')}/${(event.start.getUTCMonth() + 1).toString().padStart(2, '0')}/${event.start.getUTCFullYear()}`}</div>
-          ))}
-        </div>
-      </fieldset> */}
       <fieldset>
         <legend>Event totals</legend>
-        <div>
-          {Object.keys(eventTotals).map((key, index) => (
-            <div key={index}>{`${key}: today ${Math.floor(eventTotals[key].today / 60 / 60).toString().padStart(2, '0')}:${Math.floor(eventTotals[key].today / 60 % 60).toString().padStart(2, '0')}, week ${Math.floor(eventTotals[key].week / 60 / 60).toString().padStart(2, '0')}:${Math.floor(eventTotals[key].week / 60 % 60).toString().padStart(2, '0')}, month ${Math.floor(eventTotals[key].month / 60 / 60).toString().padStart(2, '0')}:${Math.floor(eventTotals[key].month / 60 % 60).toString().padStart(2, '0')}, custom ${Math.floor(eventTotals[key].custom / 60 / 60).toString().padStart(2, '0')}:${Math.floor(eventTotals[key].custom / 60 % 60).toString().padStart(2, '0')}`}</div>
-          ))}
-        </div>
+        <table>
+          <thead>
+            <tr>
+              <th>Task</th>
+              <th>Today</th>
+              <th>Week</th>
+              <th>Month</th>
+              <th>Custom</th>
+            </tr>
+          </thead>
+          <tbody>
+            {Object.keys(eventTotals).map((key, index) => (
+              <tr key={index}>
+                <td>{key}</td>
+                <td>{`${Math.floor(eventTotals[key].today / 60 / 60).toString().padStart(2, '0')}:${Math.floor(eventTotals[key].today / 60 % 60).toString().padStart(2, '0')}`}</td>
+                <td>{`${Math.floor(eventTotals[key].week / 60 / 60).toString().padStart(2, '0')}:${Math.floor(eventTotals[key].week / 60 % 60).toString().padStart(2, '0')}`}</td>
+                <td>{`${Math.floor(eventTotals[key].month / 60 / 60).toString().padStart(2, '0')}:${Math.floor(eventTotals[key].month / 60 % 60).toString().padStart(2, '0')}`}</td>
+                <td>{`${Math.floor(eventTotals[key].custom / 60 / 60).toString().padStart(2, '0')}:${Math.floor(eventTotals[key].custom / 60 % 60).toString().padStart(2, '0')}`}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
         <div>
           <label>Custom from</label>
           <input type="date" value={customFromDate} onChange={e => setCustomFromDate(e.target.value)} />
