@@ -54,6 +54,10 @@ function Timer() {
   const [dayNow, setDayNow] = useState(new Date().getUTCDay())
   const [customFromDate, setCustomFromDate] = useState(new Date().toISOString().slice(0, 10))
   const [customToDate, setCustomToDate] = useState(new Date().toISOString().slice(0, 10))
+  const [noOfVisibleTasks, setNoOfVisibleTasks] = useState(10)
+  const MIN_NO_OF_VISIBLE_TASKS = 10
+  const showMoreTasksVisible = tasks.length > noOfVisibleTasks
+  const showLessTasksVisible = noOfVisibleTasks > MIN_NO_OF_VISIBLE_TASKS
 
   function Ticker() {
     const dispatch = useAppDispatch()
@@ -142,13 +146,15 @@ function Timer() {
       <fieldset>
         <legend>Tasks</legend>
         <div>
-          {tasks.map((task, index) => (
+          {tasks.slice(0, noOfVisibleTasks).map((task, index) => (
             <div key={index}>
               <input type="radio" name={task.name} id={task.name} value={task.name} checked={selectedTask === task.name} onChange={() => dispatch(setSelectedTask(task.name))} />
               <label htmlFor={task.name}>{task.name}</label>
             </div>
           ))}
         </div>
+        {showMoreTasksVisible && <button onClick={() => setNoOfVisibleTasks(noOfVisibleTasks + 5)}>Show more</button>}
+        {showLessTasksVisible && <button onClick={() => setNoOfVisibleTasks(noOfVisibleTasks - 5)}>Show less</button>}
       </fieldset>
       <fieldset>
         <legend>Event totals</legend>
