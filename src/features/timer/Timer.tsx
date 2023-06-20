@@ -52,8 +52,9 @@ function Timer() {
   const [monthNow, setMonthNow] = useState(new Date().getUTCMonth())
   const [dateNow, setDateNow] = useState(new Date().getUTCDate())
   const [dayNow, setDayNow] = useState(new Date().getUTCDay())
-  const [customFromDate, setCustomFromDate] = useState(new Date().toISOString().slice(0, 10))
-  const [customToDate, setCustomToDate] = useState(new Date().toISOString().slice(0, 10))
+  const yesterday = new Date(new Date().getTime() - 86400000).toISOString().slice(0, 10)
+  const [customFromDate, setCustomFromDate] = useState(yesterday)
+  const [customToDate, setCustomToDate] = useState(yesterday)
   const [noOfVisibleTasks, setNoOfVisibleTasks] = useState(10)
   const MIN_NO_OF_VISIBLE_TASKS = 10
   const showMoreTasksVisible = tasks.length > noOfVisibleTasks
