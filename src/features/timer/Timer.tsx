@@ -58,6 +58,8 @@ function Timer() {
   const MIN_NO_OF_VISIBLE_TASKS = 10
   const showMoreTasksVisible = tasks.length > noOfVisibleTasks
   const showLessTasksVisible = noOfVisibleTasks > MIN_NO_OF_VISIBLE_TASKS
+  const [sortColumn, setSortColumn] = useState<'task' | 'today' | 'week' | 'month' | 'custom'>('task')
+  const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc')
 
   function Ticker() {
     const dispatch = useAppDispatch()
@@ -124,6 +126,27 @@ function Timer() {
     setEventTotals(newEventTotals)
   }, [eventsLength, yearNow, monthNow, dateNow, dayNow, customFromDate, customToDate])
 
+  function getSortSpan(columnName: 'task' | 'today' | 'week' | 'month' | 'custom') {
+    const isColumnSorted = sortColumn === columnName;
+    const isAscending = sortDirection === 'asc';
+  
+    const handleClick = () => {
+      if (isColumnSorted) {
+        setSortDirection(isAscending ? 'desc' : 'asc');
+      } else {
+        setSortColumn(columnName);
+        setSortDirection('asc');
+      }
+    };
+  
+    const arrowIcon = isAscending ? '▲' : '▼';
+  
+    return (
+      <span onClick={handleClick}>
+        {isColumnSorted ? arrowIcon : '▲▼'}
+      </span>
+    );
+  }
 
   return (
     <div>
@@ -161,15 +184,29 @@ function Timer() {
         <table>
           <thead>
             <tr>
-              <th>Task</th>
-              <th>Today</th>
-              <th>Week</th>
-              <th>Month</th>
-              <th>Custom</th>
+              <th>Task {getSortSpan('task')}</th>
+              <th>Today {getSortSpan('today')}</th>
+              <th>Week {getSortSpan('week')}</th>
+              <th>Month {getSortSpan('month')}</th>
+              <th>Custom {getSortSpan('custom')}</th>
             </tr>
           </thead>
           <tbody>
-            {Object.keys(eventTotals).map((key, index) => (
+            {Object.keys(eventTotals).sort((a, b) => {
+              if (sortColumn === 'task') {
+                if (sortDirection === 'asc') {
+                  return a.localeCompare(b)
+                } else {
+                  return b.localeCompare(a)
+                }
+              } else {
+                if (sortDirection === 'asc') {
+                  return eventTotals[a][sortColumn] - eventTotals[b][sortColumn]
+                } else {
+                  return eventTotals[b][sortColumn] - eventTotals[a][sortColumn]
+                }
+              }
+            }).map((key, index) => (
               <tr key={index}>
                 <td>{key}</td>
                 <td>{`${Math.floor(eventTotals[key].today / 60 / 60).toString().padStart(2, '0')}:${Math.floor(eventTotals[key].today / 60 % 60).toString().padStart(2, '0')}`}</td>
