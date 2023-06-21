@@ -9,13 +9,14 @@ import { useSelector } from 'react-redux'
 const IndexPage: NextPage = () => {
   const time = useSelector(selectTime)
   const isRunning = useSelector(selectIsRunning)
-  const title = (isRunning ? '⏵' : '⏸') + ' ' + time.minutes.toString().padStart(2, '0') + ':' + time.seconds.toString().padStart(2, '0')
+  const title = time.minutes.toString().padStart(2, '0') + ':' + time.seconds.toString().padStart(2, '0')
+  const favicon = isRunning ? '/favicon.ico' : '/favicon-pause.ico'
 
   return (
     <div className={styles.container}>
       <Head>
         <title>{title}</title>
-        <link rel="icon" href="/favicon.ico" />
+        <link rel="icon" href={favicon} />
       </Head>
       <header className={styles.header}>
         <img src="/logo.svg" className={styles.logo} alt="logo" />
