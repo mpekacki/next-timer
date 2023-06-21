@@ -313,6 +313,7 @@ class ApplicationRunner {
   async showsTimer(minutes: number, seconds: number) {
     const expectedTime = `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
     await expect(this.page.getByText(new RegExp(`^${expectedTime}$`)), `Timer should show ${expectedTime}`).toBeVisible();
+    await expect(this.page.title()).resolves.toMatch(new RegExp(`${expectedTime}`));
   }
 
   async showsWorkStatus() {
