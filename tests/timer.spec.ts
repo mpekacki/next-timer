@@ -373,6 +373,7 @@ class ApplicationRunner {
 
   async showsTaskAsSelected(taskName: string) {
     await expect(this.page.locator('div').filter({ hasText: new RegExp(`^${taskName}$`) }).getByRole('radio')).toBeChecked();
+    await expect(this.page.title()).resolves.toMatch(new RegExp(`${taskName}`));
   }
 
   async showsEvent(taskName: string, startHours: number, startMinutes: number, endHours: number, endMinutes: number) {
