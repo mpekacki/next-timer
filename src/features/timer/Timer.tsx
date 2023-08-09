@@ -59,6 +59,7 @@ function Timer() {
   const MIN_NO_OF_VISIBLE_TASKS = 10
   const showMoreTasksVisible = tasks.length > noOfVisibleTasks
   const showLessTasksVisible = noOfVisibleTasks > MIN_NO_OF_VISIBLE_TASKS
+  const showAddTaskButton = task && !tasks.find(savedTask => savedTask.name === task)
   const [sortColumn, setSortColumn] = useState<'task' | 'today' | 'week' | 'month' | 'custom'>('task')
   const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc')
 
@@ -166,7 +167,7 @@ function Timer() {
         <label htmlFor="continuousWork">Continuous work</label>
       </div>
       <input type="text" value={task} onChange={e => setTask(e.target.value)} placeholder="Task name" />
-      {task && <button onClick={() => { dispatch(addTask(task)); setTask(''); }}>Add task</button>}
+      {showAddTaskButton && <button onClick={() => { dispatch(addTask(task)); setTask(''); }}>Add task</button>}
       <fieldset>
         <legend>Tasks</legend>
         <div>

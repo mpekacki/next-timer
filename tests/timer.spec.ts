@@ -197,6 +197,19 @@ test('search tasks', async ({ page }) => {
   await app.showsTask('Walk with dog');
 });
 
+test('does not allow creation of duplicate tasks', async ({ page }) => {
+  const app = new ApplicationRunner(page);
+  await app.goToStartPage();
+  await app.fillTaskName('Pet the dog');
+  await app.showsAddTaskButton();
+  await app.getAddTaskButton().click();
+  await app.showsTask('Pet the dog');
+  await app.fillTaskName('Pet the dog');
+  await app.doesNotShowAddTaskButton();
+  await app.fillTaskName('Walk with dog');
+  await app.showsAddTaskButton();
+});
+
 test('cut break early', async ({ page }) => {
   const app = new ApplicationRunner(page);
   await app.goToStartPage();
@@ -286,6 +299,10 @@ class ApplicationRunner {
     return this.page.getByRole('button', { name: 'Break' });
   }
 
+  getAddTaskButton() {
+    return this.page.getByRole('button', { name: 'Add task' });
+  }
+
   async start() {
     await this.getStartButton().click();
   }
@@ -340,13 +357,21 @@ class ApplicationRunner {
     await expect(this.getBreakButton()).toBeVisible();
   }
 
+  async showsAddTaskButton() {
+    await expect(this.getAddTaskButton()).toBeVisible();
+  }
+
+  async doesNotShowAddTaskButton() {
+    await expect(this.getAddTaskButton()).not.toBeVisible();
+  }
+
   async fillTaskName(taskName: string) {
     await this.page.fill('input[placeholder="Task name"]', taskName);
   }
 
   async saveTask(taskName: string) {
     await this.fillTaskName(taskName);
-    await this.page.click('button:has-text("Add task")');
+    await this.getAddTaskButton().click();
   }
 
   async selectTask(taskName: string) {
