@@ -275,6 +275,17 @@ test('reset' , async ({ page }) => {
   await app.showsTotalTimeWorked(0, 0, 0);
 });
 
+test('clear task input on clear button click', async ({ page }) => {
+  const app = new ApplicationRunner(page);
+  await app.goToStartPage();
+  await app.doesNotShowClearTaskInputButton();
+  await app.fillTaskName('Pet the dog');
+  await app.showsAddTaskButton();
+  await app.showsClearTaskInputButton();
+  await app.getClearTaskInputButton().click();
+  await app.doesNotShowAddTaskButton();
+  await app.doesNotShowClearTaskInputButton();
+});
 
 class ApplicationRunner {
   constructor(private page: Page) {}
@@ -301,6 +312,10 @@ class ApplicationRunner {
 
   getAddTaskButton() {
     return this.page.getByRole('button', { name: 'Add task' });
+  }
+
+  getClearTaskInputButton() {
+    return this.page.getByRole('button', { name: 'Clear' });
   }
 
   async start() {
@@ -363,6 +378,14 @@ class ApplicationRunner {
 
   async doesNotShowAddTaskButton() {
     await expect(this.getAddTaskButton()).not.toBeVisible();
+  }
+
+  async showsClearTaskInputButton() {
+    await expect(this.getClearTaskInputButton()).toBeVisible();
+  }
+
+  async doesNotShowClearTaskInputButton() {
+    await expect(this.getClearTaskInputButton()).not.toBeVisible();
   }
 
   async fillTaskName(taskName: string) {

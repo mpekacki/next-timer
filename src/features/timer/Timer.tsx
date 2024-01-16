@@ -60,6 +60,7 @@ function Timer() {
   const showMoreTasksVisible = tasks.length > noOfVisibleTasks
   const showLessTasksVisible = noOfVisibleTasks > MIN_NO_OF_VISIBLE_TASKS
   const showAddTaskButton = task && !tasks.find(savedTask => savedTask.name === task)
+  const showClearTaskInputButton = !!task
   const [sortColumn, setSortColumn] = useState<'task' | 'today' | 'week' | 'month' | 'custom'>('task')
   const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc')
 
@@ -168,6 +169,7 @@ function Timer() {
       </div>
       <input type="text" value={task} onChange={e => setTask(e.target.value)} placeholder="Task name" />
       {showAddTaskButton && <button onClick={() => { dispatch(addTask(task)); setTask(''); }}>Add task</button>}
+      {showClearTaskInputButton && <button onClick={() => setTask('')}>Clear</button>}
       <fieldset>
         <legend>Tasks</legend>
         <div>
