@@ -125,6 +125,10 @@ function Timer() {
       if (startDate >= customFrom && endDate <= customTo) {
         newEventTotals[event.task].custom += eventLength
       }
+      // if all zeros, remove task from eventTotals
+      if (newEventTotals[event.task].today === 0 && newEventTotals[event.task].week === 0 && newEventTotals[event.task].month === 0 && newEventTotals[event.task].custom === 0) {
+        delete newEventTotals[event.task]
+      }
     })
     setEventTotals(newEventTotals)
   }, [eventsLength, yearNow, monthNow, dateNow, dayNow, customFromDate, customToDate])

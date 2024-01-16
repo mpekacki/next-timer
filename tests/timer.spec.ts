@@ -132,11 +132,11 @@ test('log tasks', async ({ page }) => {
   await app.showsTimeWorkedThisWeekForTask('Pet the dog', 0, 0);
   await app.showsTimeWorkedThisMonthForTask('Pet the dog', 1, 40);
   await app.jump(0, 60 * 24 * 30);
-  await app.showsTimeWorkedTodayForTask('Pet the dog', 0, 0);
-  await app.showsTimeWorkedThisWeekForTask('Pet the dog', 0, 0);
-  await app.showsTimeWorkedThisMonthForTask('Pet the dog', 0, 0);
+  await app.doesNotShowTotalsForTask('Pet the dog');
   await app.setCustomSummaryDateRange(2023, 6, 9, 2023, 6, 9);
   await app.showsTimeWorkedForCustomPeriodForTask('Pet the dog', 1, 40);
+  await app.setCustomSummaryDateRange(2024, 6, 9, 2024, 6, 9);
+  await app.doesNotShowTotalsForTask('Pet the dog');
 });
 
 test('log partial tasks', async ({ page }) => {
@@ -318,6 +318,10 @@ class ApplicationRunner {
     return this.page.getByRole('button', { name: 'Clear' });
   }
 
+  getTotalsRowForTask(taskName: string) {
+    return this.page.locator(`td:has-text("${taskName}")`);
+  }
+
   async start() {
     await this.getStartButton().click();
   }
@@ -430,17 +434,17 @@ class ApplicationRunner {
 
   async validateNthTotalSlot(taskName: string, nth: number, hours: number, minutes: number) {
     // Find the table cell with the task name
-    const taskNameCell = await this.page.waitForSelector(`td:has-text("${taskName}")`);
+    const taskNameCell = this.getTotalsRowForTask(taskName);
 
     // Find the corresponding time cell in the "Total" column
-    const totalCell = await taskNameCell.$(`xpath=../td[${nth}]`);
+    const totalCell = taskNameCell.locator(`xpath=../td[${nth}]`);
 
     if (!totalCell) {
       throw new Error(`Could not find total cell for ${nth}th column`);
     }
 
     // Retrieve the time value
-    const total = await totalCell.innerText();
+    const total = await totalCell.textContent();
 
     // Check that the time value is correct
     expect(total).toMatch(new RegExp(`${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}`));
@@ -460,6 +464,10 @@ class ApplicationRunner {
 
   async showsTimeWorkedForCustomPeriodForTask(taskName: string, hours: number, minutes: number) {
     await this.validateNthTotalSlot(taskName, 5, hours, minutes);
+  }
+
+  async doesNotShowTotalsForTask(taskName: string) {
+    await expect(this.getTotalsRowForTask(taskName)).not.toBeVisible();
   }
 
   async tick(seconds: number, minutes?: number) {
