@@ -157,14 +157,14 @@ function Timer() {
 
   return (
     <div>
-      <div>{phase}</div>
+      <h1>{timeString}</h1>
+      <h2>{phase}</h2>
       <Ticker />
       {isIdle && <button onClick={() => dispatch(start())}>Start</button>}
       {isRunning && <button onClick={() => dispatch(hold())}>Hold</button>}
       {isBreak && <button onClick={() => dispatch(returnToWork())}>Return to work</button>}
       {isWork && isBreakAvailable && <button onClick={() => dispatch(startBreak())}>Break</button>}
       <button onClick={() => dispatch(reset())}>Reset</button>
-      <div>{timeString}</div>
       <div>{totalTimeWorked}</div>
       <div>{availableBreakTime}</div>
       <div>

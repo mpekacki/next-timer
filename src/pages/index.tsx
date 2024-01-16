@@ -20,7 +20,6 @@ const IndexPage: NextPage = () => {
         <link rel="icon" href={favicon} />
       </Head>
       <header className={styles.header}>
-        <img src="/logo.svg" className={styles.logo} alt="logo" />
         <Timer />
       </header>
     </div>
