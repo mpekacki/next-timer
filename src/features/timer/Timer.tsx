@@ -159,6 +159,7 @@ function Timer() {
     <div>
       <h1>{timeString}</h1>
       <h2>{phase}</h2>
+      <h3>{selectedTask}</h3>
       <Ticker />
       {isIdle && <button onClick={() => dispatch(start())}>Start</button>}
       {isRunning && <button onClick={() => dispatch(hold())}>Hold</button>}
