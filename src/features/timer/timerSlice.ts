@@ -39,7 +39,7 @@ const initialState: TimerState = {
   continousWork: false,
   lastTimestamp: null,
   initialSeconds: 25 * 60,
-  tasks: [{ name: 'No task'}],
+  tasks: [{ name: 'No task' }],
   selectedTask: 'No task',
   events: [],
   settings: {
@@ -64,7 +64,7 @@ export const timerSlice = createSlice({
       }
       let then = state.lastTimestamp || now - 1000
       state.lastTimestamp = now
-      while(totalDecrement > 0) {
+      while (totalDecrement > 0) {
         const decrement = Math.min(state.seconds, totalDecrement)
         totalDecrement -= decrement
         state.seconds -= decrement
@@ -75,7 +75,7 @@ export const timerSlice = createSlice({
           state.availableBreakTimeSeconds -= decrement
         }
         if (state.seconds === 0) {
-          let newSeconds: number, newPhase : "work" | "break"
+          let newSeconds: number, newPhase: "work" | "break"
           if (state.phase === "work") {
             state.longBreakCounter += 1
             const isLongBreak = state.longBreakCounter === state.settings.longBreakEvery
@@ -105,7 +105,7 @@ export const timerSlice = createSlice({
     },
     start: (state) => {
       state.status = "running",
-      state.initialSeconds = state.seconds
+        state.initialSeconds = state.seconds
     },
     hold: (state) => {
       state.status = "idle"
@@ -147,6 +147,7 @@ export const timerSlice = createSlice({
       }
       state.selectedTask = action.payload
       state.initialSeconds = state.seconds
+      moveTaskToTop(state, action.payload)
     }
   }
 })
@@ -162,13 +163,17 @@ function addEvent(state: WritableDraft<TimerState>, then: number, seconds: numbe
     task: state.selectedTask
   })
   if (moveTask) {
-    // move task to second position
-    const index = state.tasks.findIndex(task => task.name === state.selectedTask)
-    if (index > 1) {
-      const task = state.tasks[index]
-      state.tasks.splice(index, 1)
-      state.tasks.splice(1, 0, task)
-    }
+    moveTaskToTop(state, state.selectedTask)
+  }
+}
+
+function moveTaskToTop(state: WritableDraft<TimerState>, taskName: string) {
+  // move task to second position
+  const index = state.tasks.findIndex(task => task.name === taskName);
+  if (index > 1) {
+    const task = state.tasks[index];
+    state.tasks.splice(index, 1);
+    state.tasks.splice(1, 0, task);
   }
 }
 

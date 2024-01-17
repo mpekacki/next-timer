@@ -136,7 +136,7 @@ function Timer() {
   function getSortSpan(columnName: 'task' | 'today' | 'week' | 'month' | 'custom') {
     const isColumnSorted = sortColumn === columnName;
     const isAscending = sortDirection === 'asc';
-  
+
     const handleClick = () => {
       if (isColumnSorted) {
         setSortDirection(isAscending ? 'desc' : 'asc');
@@ -145,9 +145,9 @@ function Timer() {
         setSortDirection('asc');
       }
     };
-  
+
     const arrowIcon = isAscending ? '▲' : '▼';
-  
+
     return (
       <span onClick={handleClick}>
         {isColumnSorted ? arrowIcon : '▲▼'}
@@ -159,7 +159,6 @@ function Timer() {
     <div>
       <h1>{timeString}</h1>
       <h2>{phase}</h2>
-      <h3>{selectedTask}</h3>
       <Ticker />
       {isIdle && <button onClick={() => dispatch(start())}>Start</button>}
       {isRunning && <button onClick={() => dispatch(hold())}>Hold</button>}
