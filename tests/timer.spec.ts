@@ -291,7 +291,7 @@ class ApplicationRunner {
   constructor(private page: Page) {}
 
   async goToStartPage() {
-    await this.page.goto('http://localhost:3000/');
+    await this.page.goto('http://localhost:3000/?noanimations');
   }
 
   async reload() {

@@ -24,11 +24,25 @@ import {
   selectEvents
 } from './timerSlice'
 import { useAppDispatch } from '../../hooks'
+import { useAutoAnimate } from '@formkit/auto-animate/react'
+import { useSearchParams } from 'next/navigation'
 
 interface EventTotals { [key: string]: { today: number, week: number, month: number, custom: number } }
 
 function Timer() {
   const dispatch = useAppDispatch()
+
+  const [animationParent1, enableAnimations1] = useAutoAnimate()
+  const [animationParent2, enableAnimations2] = useAutoAnimate()
+  const [animationParent3, enableAnimations3] = useAutoAnimate()
+  const searchParams = useSearchParams()
+  useEffect(() => {
+    if (searchParams.has('noanimations')) {
+      enableAnimations1(false)
+      enableAnimations2(false)
+      enableAnimations3(false)
+    }
+  }, [searchParams])
 
   const [task, setTask] = useState('')
 
@@ -172,13 +186,15 @@ function Timer() {
         <label htmlFor="continuousWork">Continuous work</label>
       </div>
       <input type="text" value={task} onChange={e => setTask(e.target.value)} placeholder="Task name" />
-      {showAddTaskButton && <button onClick={() => { dispatch(addTask(task)); setTask(''); }}>Add task</button>}
-      {showClearTaskInputButton && <button onClick={() => setTask('')}>Clear</button>}
+      <div ref={animationParent1}>
+        {showAddTaskButton && <button onClick={() => { dispatch(addTask(task)); setTask(''); }}>Add task</button>}
+        {showClearTaskInputButton && <button onClick={() => setTask('')}>Clear</button>}
+      </div>
       <fieldset>
         <legend>Tasks</legend>
-        <div>
-          {tasks.slice(0, noOfVisibleTasks).map((task, index) => (
-            <div key={index}>
+        <div ref={animationParent2}>
+          {tasks.slice(0, noOfVisibleTasks).map((task) => (
+            <div key={task.name}>
               <input type="radio" name={task.name} id={task.name} value={task.name} checked={selectedTask === task.name} onChange={() => dispatch(setSelectedTask(task.name))} />
               <label htmlFor={task.name}>{task.name}</label>
             </div>
@@ -199,7 +215,7 @@ function Timer() {
               <th>Custom {getSortSpan('custom')}</th>
             </tr>
           </thead>
-          <tbody>
+          <tbody ref={animationParent3}>
             {Object.keys(eventTotals).sort((a, b) => {
               if (sortColumn === 'task') {
                 if (sortDirection === 'asc') {
@@ -214,8 +230,8 @@ function Timer() {
                   return eventTotals[b][sortColumn] - eventTotals[a][sortColumn]
                 }
               }
-            }).map((key, index) => (
-              <tr key={index}>
+            }).map((key) => (
+              <tr key={key}>
                 <td>{key}</td>
                 <td>{`${Math.floor(eventTotals[key].today / 60 / 60).toString().padStart(2, '0')}:${Math.floor(eventTotals[key].today / 60 % 60).toString().padStart(2, '0')}`}</td>
                 <td>{`${Math.floor(eventTotals[key].week / 60 / 60).toString().padStart(2, '0')}:${Math.floor(eventTotals[key].week / 60 % 60).toString().padStart(2, '0')}`}</td>
