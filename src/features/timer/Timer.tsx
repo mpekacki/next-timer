@@ -32,16 +32,15 @@ interface EventTotals { [key: string]: { today: number, week: number, month: num
 function Timer() {
   const dispatch = useAppDispatch()
 
-  const [animationParent1, enableAnimations1] = useAutoAnimate()
-  const [animationParent2, enableAnimations2] = useAutoAnimate()
-  const [animationParent3, enableAnimations3] = useAutoAnimate()
+  const [animationParentTop, enableAnimationsTop] = useAutoAnimate()
+  const [animationParentTasks, enableAnimationsTasks] = useAutoAnimate()
+  const [animationParentTotals, enableAnimationsTotals] = useAutoAnimate()
   const searchParams = useSearchParams()
   useEffect(() => {
-    if (searchParams.has('noanimations')) {
-      enableAnimations1(false)
-      enableAnimations2(false)
-      enableAnimations3(false)
-    }
+    const enable = !searchParams.has('noanimations');
+    enableAnimationsTop(enable);
+    enableAnimationsTasks(enable);
+    enableAnimationsTotals(enable);
   }, [searchParams])
 
   const [task, setTask] = useState('')
@@ -170,7 +169,7 @@ function Timer() {
   }
 
   return (
-    <div>
+    <div ref={animationParentTop}>
       <h1>{timeString}</h1>
       <h2>{phase}</h2>
       <Ticker />
@@ -186,13 +185,11 @@ function Timer() {
         <label htmlFor="continuousWork">Continuous work</label>
       </div>
       <input type="text" value={task} onChange={e => setTask(e.target.value)} placeholder="Task name" />
-      <div ref={animationParent1}>
-        {showAddTaskButton && <button onClick={() => { dispatch(addTask(task)); setTask(''); }}>Add task</button>}
-        {showClearTaskInputButton && <button onClick={() => setTask('')}>Clear</button>}
-      </div>
+      {showAddTaskButton && <button onClick={() => { dispatch(addTask(task)); setTask(''); }}>Add task</button>}
+      {showClearTaskInputButton && <button onClick={() => setTask('')}>Clear</button>}
       <fieldset>
         <legend>Tasks</legend>
-        <div ref={animationParent2}>
+        <div ref={animationParentTasks}>
           {tasks.slice(0, noOfVisibleTasks).map((task) => (
             <div key={task.name}>
               <input type="radio" name={task.name} id={task.name} value={task.name} checked={selectedTask === task.name} onChange={() => dispatch(setSelectedTask(task.name))} />
@@ -215,7 +212,7 @@ function Timer() {
               <th>Custom {getSortSpan('custom')}</th>
             </tr>
           </thead>
-          <tbody ref={animationParent3}>
+          <tbody ref={animationParentTotals}>
             {Object.keys(eventTotals).sort((a, b) => {
               if (sortColumn === 'task') {
                 if (sortDirection === 'asc') {
