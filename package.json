@@ -5,7 +5,7 @@
     "build": "next build",
     "start": "next start",
     "type-check": "tsc",
-    "test": "jest"
+    "test": "npx playwright test"
   },
   "dependencies": {
     "@formkit/auto-animate": "^0.8.1",
