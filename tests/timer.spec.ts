@@ -120,15 +120,18 @@ test('log tasks', async ({ page }) => {
   // await app.showsEvent('Pet the dog', 13, 0, 13, 25);
   // await app.showsEvent('Pet the dog', 13, 30, 13, 55);
   await app.showsTimeWorkedTodayForTask('Pet the dog', 1, 40);
+  await app.showsTimeWorkedYesterdayForTask('Pet the dog', 0, 0);
   await app.showsTimeWorkedThisWeekForTask('Pet the dog', 1, 40);
   await app.showsTimeWorkedThisMonthForTask('Pet the dog', 1, 40);
   await app.hold();
   await app.jump(0, 60 * 24);
   await app.showsTimeWorkedTodayForTask('Pet the dog', 0, 0);
+  await app.showsTimeWorkedYesterdayForTask('Pet the dog', 1, 40);
   await app.showsTimeWorkedThisWeekForTask('Pet the dog', 1, 40);
   await app.showsTimeWorkedThisMonthForTask('Pet the dog', 1, 40);
   await app.jump(0, 60 * 24 * 7);
   await app.showsTimeWorkedTodayForTask('Pet the dog', 0, 0);
+  await app.showsTimeWorkedYesterdayForTask('Pet the dog', 0, 0);
   await app.showsTimeWorkedThisWeekForTask('Pet the dog', 0, 0);
   await app.showsTimeWorkedThisMonthForTask('Pet the dog', 1, 40);
   await app.jump(0, 60 * 24 * 30);
@@ -454,16 +457,20 @@ class ApplicationRunner {
     await this.validateNthTotalSlot(taskName, 2, hours, minutes);
   }
 
-  async showsTimeWorkedThisWeekForTask(taskName: string, hours: number, minutes: number) {
+  async showsTimeWorkedYesterdayForTask(taskName: string, hours: number, minutes: number) {
     await this.validateNthTotalSlot(taskName, 3, hours, minutes);
   }
 
-  async showsTimeWorkedThisMonthForTask(taskName: string, hours: number, minutes: number) {
+  async showsTimeWorkedThisWeekForTask(taskName: string, hours: number, minutes: number) {
     await this.validateNthTotalSlot(taskName, 4, hours, minutes);
   }
 
-  async showsTimeWorkedForCustomPeriodForTask(taskName: string, hours: number, minutes: number) {
+  async showsTimeWorkedThisMonthForTask(taskName: string, hours: number, minutes: number) {
     await this.validateNthTotalSlot(taskName, 5, hours, minutes);
+  }
+
+  async showsTimeWorkedForCustomPeriodForTask(taskName: string, hours: number, minutes: number) {
+    await this.validateNthTotalSlot(taskName, 6, hours, minutes);
   }
 
   async doesNotShowTotalsForTask(taskName: string) {

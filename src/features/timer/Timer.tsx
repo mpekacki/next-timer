@@ -27,7 +27,7 @@ import { useAppDispatch } from '../../hooks'
 import { useAutoAnimate } from '@formkit/auto-animate/react'
 import { useSearchParams } from 'next/navigation'
 
-interface EventTotals { [key: string]: { today: number, week: number, month: number, custom: number } }
+interface EventTotals { [key: string]: { today: number, yesterday: number, week: number, month: number, custom: number } }
 
 function Timer() {
   const dispatch = useAppDispatch()
@@ -74,7 +74,7 @@ function Timer() {
   const showLessTasksVisible = noOfVisibleTasks > MIN_NO_OF_VISIBLE_TASKS
   const showAddTaskButton = task && !tasks.find(savedTask => savedTask.name === task)
   const showClearTaskInputButton = !!task
-  const [sortColumn, setSortColumn] = useState<'task' | 'today' | 'week' | 'month' | 'custom'>('task')
+  const [sortColumn, setSortColumn] = useState<'task' | 'today' | 'yesterday' | 'week' | 'month' | 'custom'>('task')
   const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc')
 
   function Ticker() {
@@ -108,6 +108,7 @@ function Timer() {
   useEffect(() => {
     const newEventTotals: EventTotals = {}
     const today = new Date(yearNow, monthNow, dateNow)
+    const yesterday = new Date(yearNow, monthNow, dateNow - 1)
     const week = new Date(yearNow, monthNow, dateNow - dayNow)
     const month = new Date(yearNow, monthNow)
     const customFrom = new Date(customFromDate)
@@ -120,6 +121,7 @@ function Timer() {
       if (!newEventTotals[event.task]) {
         newEventTotals[event.task] = {
           today: 0,
+          yesterday: 0,
           week: 0,
           month: 0,
           custom: 0
@@ -128,6 +130,9 @@ function Timer() {
       const eventLength = Math.floor((event.end.getTime() - event.start.getTime()) / 1000)
       if (startDate >= today) {
         newEventTotals[event.task].today += eventLength
+      }
+      if (startDate >= yesterday && endDate < today) {
+        newEventTotals[event.task].yesterday += eventLength
       }
       if (startDate >= week) {
         newEventTotals[event.task].week += eventLength
@@ -146,7 +151,7 @@ function Timer() {
     setEventTotals(newEventTotals)
   }, [eventsLength, yearNow, monthNow, dateNow, dayNow, customFromDate, customToDate])
 
-  function getSortSpan(columnName: 'task' | 'today' | 'week' | 'month' | 'custom') {
+  function getSortSpan(columnName: 'task' | 'today' | 'yesterday' | 'week' | 'month' | 'custom') {
     const isColumnSorted = sortColumn === columnName;
     const isAscending = sortDirection === 'asc';
 
@@ -207,6 +212,7 @@ function Timer() {
             <tr>
               <th>Task {getSortSpan('task')}</th>
               <th>Today {getSortSpan('today')}</th>
+              <th>Yesterday {getSortSpan('yesterday')}</th>
               <th>Week {getSortSpan('week')}</th>
               <th>Month {getSortSpan('month')}</th>
               <th>Custom {getSortSpan('custom')}</th>
@@ -231,6 +237,7 @@ function Timer() {
               <tr key={key}>
                 <td>{key}</td>
                 <td>{`${Math.floor(eventTotals[key].today / 60 / 60).toString().padStart(2, '0')}:${Math.floor(eventTotals[key].today / 60 % 60).toString().padStart(2, '0')}`}</td>
+                <td>{`${Math.floor(eventTotals[key].yesterday / 60 / 60).toString().padStart(2, '0')}:${Math.floor(eventTotals[key].yesterday / 60 % 60).toString().padStart(2, '0')}`}</td>
                 <td>{`${Math.floor(eventTotals[key].week / 60 / 60).toString().padStart(2, '0')}:${Math.floor(eventTotals[key].week / 60 % 60).toString().padStart(2, '0')}`}</td>
                 <td>{`${Math.floor(eventTotals[key].month / 60 / 60).toString().padStart(2, '0')}:${Math.floor(eventTotals[key].month / 60 % 60).toString().padStart(2, '0')}`}</td>
                 <td>{`${Math.floor(eventTotals[key].custom / 60 / 60).toString().padStart(2, '0')}:${Math.floor(eventTotals[key].custom / 60 % 60).toString().padStart(2, '0')}`}</td>
