@@ -173,6 +173,29 @@ test('log partial tasks', async ({ page }) => {
   await app.showsTimeWorkedTodayForTask('Pet the dog', 0, 25);
 });
 
+test('move custom date input if range is negative', async ({ page }) => {
+  const app = new ApplicationRunner(page);
+  await app.goToStartPage();
+  await app.setCustomFrom(2023, 6, 9);
+  await app.setCustomTo(2023, 6, 10);
+  await app.customFromInputShowsDate(2023, 6, 9);
+  await app.customToInputShowsDate(2023, 6, 10);
+  await app.setCustomFrom(2023, 6, 10);
+  await page.waitForTimeout(100);
+  await app.customFromInputShowsDate(2023, 6, 10);
+  await app.customToInputShowsDate(2023, 6, 10);
+  await app.setCustomFrom(2023, 6, 11);
+  await page.waitForTimeout(100);
+  await app.customFromInputShowsDate(2023, 6, 11);
+  await app.customToInputShowsDate(2023, 6, 11);
+  await app.setCustomTo(2023, 6, 10);
+  await page.waitForTimeout(100);
+  await app.customFromInputShowsDate(2023, 6, 10);
+  await app.customToInputShowsDate(2023, 6, 10);
+  await page.waitForTimeout(100);
+  // timeouts are to avoid flakiness with false negatives
+});
+
 test('search tasks', async ({ page }) => {
   const app = new ApplicationRunner(page);
   await app.goToStartPage();
@@ -409,13 +432,49 @@ class ApplicationRunner {
   }
 
   async setCustomSummaryDateRange(startYear: number, startMonth: number, startDay: number, endYear: number, endMonth: number, endDay: number) {
-    const customFromInput = await this.page.$('label:has-text("Custom from") + input[type="date"]');
-    const customToInput = await this.page.$('label:has-text("Custom to") + input[type="date"]');
-    if (!customFromInput || !customToInput) {
-      throw new Error('Could not find custom date inputs');
+    await this.setCustomFrom(startYear, startMonth, startDay);
+    await this.setCustomTo(endYear, endMonth, endDay);
+  }
+
+  async setCustomFrom(startYear: number, startMonth: number, startDay: number) {
+    const customFromInput = await this.getCustomFromInput();
+    if (!customFromInput) {
+      throw new Error('Could not find custom date from input');
     }
     await customFromInput.fill(`${startYear}-${String(startMonth).padStart(2, '0')}-${String(startDay).padStart(2, '0')}`);
+  }
+
+  async setCustomTo(endYear: number, endMonth: number, endDay: number) {
+    const customToInput = await this.getCustomToInput();
+    if (!customToInput) {
+      throw new Error('Could not find custom date to input');
+    }
     await customToInput.fill(`${endYear}-${String(endMonth).padStart(2, '0')}-${String(endDay).padStart(2, '0')}`);
+  }
+
+  async getCustomFromInput() {
+    return this.page.locator('input[name="custom-from"]');
+  }
+
+  async getCustomToInput() {
+    return this.page.locator('input[name="custom-to"]');
+  }
+
+  async customFromInputShowsDate(year: number, month: number, day: number) {
+    const customToInput = await this.getCustomFromInput();
+    if (!customToInput) {
+      throw new Error('Could not find custom date from input');
+    }
+    console.log(customToInput);
+    expect(customToInput).toHaveValue(`${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}`);
+  }
+
+  async customToInputShowsDate(year: number, month: number, day: number) {
+    const customToInput = await this.getCustomToInput();
+    if (!customToInput) {
+      throw new Error('Could not find custom date to input');
+    }
+    expect(customToInput).toHaveValue(`${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}`);
   }
 
   async showsTask(taskName: string) {

@@ -10,6 +10,8 @@ import {
   setContinuousWork,
   addTask,
   setSelectedTask,
+  setCustomFromDate,
+  setCustomToDate,
   selectTime,
   selectIsIdle,
   selectIsRunning,
@@ -21,7 +23,9 @@ import {
   selectIsBreakAvailable,
   selectTasks,
   selectSelectedTask,
-  selectEvents
+  selectEvents,
+  selectCustomFromDate,
+  selectCustomToDate
 } from './timerSlice'
 import { useAppDispatch } from '../../hooks'
 import { useAutoAnimate } from '@formkit/auto-animate/react'
@@ -60,14 +64,13 @@ function Timer() {
   const selectedTask = useSelector(selectSelectedTask)
   const events = useSelector(selectEvents)
   const eventsLength = events.length
+  const customFromDate = useSelector(selectCustomFromDate)
+  const customToDate = useSelector(selectCustomToDate)
   const [eventTotals, setEventTotals] = useState<EventTotals>({})
   const [yearNow, setYearNow] = useState(new Date().getUTCFullYear())
   const [monthNow, setMonthNow] = useState(new Date().getUTCMonth())
   const [dateNow, setDateNow] = useState(new Date().getUTCDate())
   const [dayNow, setDayNow] = useState(new Date().getUTCDay())
-  const yesterday = new Date(new Date().getTime() - 86400000).toISOString().slice(0, 10)
-  const [customFromDate, setCustomFromDate] = useState(yesterday)
-  const [customToDate, setCustomToDate] = useState(yesterday)
   const [noOfVisibleTasks, setNoOfVisibleTasks] = useState(10)
   const MIN_NO_OF_VISIBLE_TASKS = 10
   const showMoreTasksVisible = tasks.length > noOfVisibleTasks
@@ -246,12 +249,12 @@ function Timer() {
           </tbody>
         </table>
         <div>
-          <label>Custom from</label>
-          <input type="date" value={customFromDate} onChange={e => setCustomFromDate(e.target.value)} />
+          <label htmlFor="custom-from">Custom from</label>
+          <input name="custom-from" type="date" value={customFromDate} onChange={e => dispatch(setCustomFromDate(e.target.value))} />
         </div>
         <div>
-          <label>Custom to</label>
-          <input type="date" value={customToDate} onChange={e => setCustomToDate(e.target.value)} />
+          <label htmlFor="custom-to">Custom to</label>
+          <input name="custom-to" type="date" value={customToDate} onChange={e => dispatch(setCustomToDate(e.target.value))} />
         </div>
       </fieldset>
     </div>

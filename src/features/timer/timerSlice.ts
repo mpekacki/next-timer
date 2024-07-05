@@ -21,6 +21,8 @@ export interface TimerState {
     end: number;
     task: string;
   }[];
+  customFromDate: string;
+  customToDate: string;
   settings: {
     workSeconds: number;
     breakSeconds: number;
@@ -42,6 +44,8 @@ const initialState: TimerState = {
   tasks: [{ name: 'No task' }],
   selectedTask: 'No task',
   events: [],
+  customFromDate: new Date(new Date().getTime() - 86400000).toISOString().slice(0, 10),
+  customToDate: new Date(new Date().getTime() - 86400000).toISOString().slice(0, 10),
   settings: {
     workSeconds: 25 * 60,
     breakSeconds: 5 * 60,
@@ -148,7 +152,19 @@ export const timerSlice = createSlice({
       state.selectedTask = action.payload
       state.initialSeconds = state.seconds
       moveTaskToTop(state, action.payload)
-    }
+    },
+    setCustomFromDate: (state, action: PayloadAction<string>) => {
+      state.customFromDate = action.payload
+      if (state.customFromDate > state.customToDate) {
+        state.customToDate = state.customFromDate
+      }
+    },
+    setCustomToDate: (state, action: PayloadAction<string>) => {
+      state.customToDate = action.payload
+      if (state.customToDate < state.customFromDate) {
+        state.customFromDate = state.customToDate
+      }
+    },
   }
 })
 
@@ -177,7 +193,7 @@ function moveTaskToTop(state: WritableDraft<TimerState>, taskName: string) {
   }
 }
 
-export const { tick, start, hold, returnToWork, startBreak, reset, setContinuousWork, addTask, setSelectedTask } = timerSlice.actions
+export const { tick, start, hold, returnToWork, startBreak, reset, setContinuousWork, addTask, setSelectedTask, setCustomFromDate, setCustomToDate } = timerSlice.actions
 
 export const selectTime = (state: AppState) => ({ minutes: Math.floor(state.seconds / 60), seconds: state.seconds % 60 })
 export const selectIsIdle = (state: AppState) => state.status === "idle"
@@ -194,6 +210,8 @@ export const selectEvents = (state: AppState) => state.events.map(event => ({
   start: new Date(event.start),
   end: new Date(event.end)
 }))
+export const selectCustomFromDate = (state: AppState) => state.customFromDate
+export const selectCustomToDate = (state: AppState) => state.customToDate
 export const selectIsBreakAvailable = (state: AppState) => state.availableBreakTimeSeconds > 0
 
 
