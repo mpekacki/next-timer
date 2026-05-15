@@ -62,7 +62,7 @@ export const timerSlice = createSlice({
       const now = action.payload
       let totalDecrement
       if (state.lastTimestamp) {
-        totalDecrement = Math.floor((now - state.lastTimestamp) / 1000)
+        totalDecrement = Math.round((now - state.lastTimestamp) / 1000)
       } else {
         totalDecrement = 1
       }
