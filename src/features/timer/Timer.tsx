@@ -206,7 +206,7 @@ function Timer() {
           ))}
         </div>
         {showMoreTasksVisible && <button onClick={() => setNoOfVisibleTasks(noOfVisibleTasks + 5)}>Show more</button>}
-        {showLessTasksVisible && <button onClick={() => setNoOfVisibleTasks(noOfVisibleTasks - 5)}>Show less</button>}
+        {showLessTasksVisible && <button onClick={() => setNoOfVisibleTasks(MIN_NO_OF_VISIBLE_TASKS)}>Show less</button>}
       </fieldset>
       <fieldset>
         <legend>Event totals</legend>
