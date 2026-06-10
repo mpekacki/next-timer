@@ -192,7 +192,7 @@ function Timer() {
         <input type="checkbox" checked={continuousWork} onChange={() => dispatch(setContinuousWork(!continuousWork))} id="continuousWork" name="continuousWork" />
         <label htmlFor="continuousWork">Continuous work</label>
       </div>
-      <input type="text" value={task} onChange={e => setTask(e.target.value)} placeholder="Task name" />
+      <input type="text" value={task} onChange={e => setTask(e.target.value.trim())} placeholder="Task name" />
       {showAddTaskButton && <button onClick={() => { dispatch(addTask(task)); setTask(''); }}>Add task</button>}
       {showClearTaskInputButton && <button onClick={() => setTask('')}>Clear</button>}
       <fieldset>

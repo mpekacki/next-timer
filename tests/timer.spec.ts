@@ -221,6 +221,13 @@ test('search tasks', async ({ page }) => {
   await app.showsTask('Pet the dog');
   await app.showsTask('Play games');
   await app.showsTask('Walk with dog');
+  await app.fillTaskName(' Pet the dog ');
+  await app.showsTask('Pet the dog');
+  await app.showsTask('No task');
+  await app.saveTask(' Feed the dog ');
+  await app.showsTask('Feed the dog');
+  await app.fillTaskName(' Feed the dog ');
+  await app.showsTask('Feed the dog');
 });
 
 test('does not allow creation of duplicate tasks', async ({ page }) => {
