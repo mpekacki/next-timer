@@ -228,6 +228,12 @@ test('search tasks', async ({ page }) => {
   await app.showsTask('Feed the dog');
   await app.fillTaskName(' Feed the dog ');
   await app.showsTask('Feed the dog');
+  await app.fillTaskName('');
+  await app.typeTaskName('Pet the dog');
+  await app.taskNameInputHasValue('Pet the dog');
+  await app.showsTask('Pet the dog');
+  await app.showsTask('No task');
+  await app.doesNotShowTask('Play games');
 });
 
 test('does not allow creation of duplicate tasks', async ({ page }) => {
@@ -427,6 +433,18 @@ class ApplicationRunner {
 
   async fillTaskName(taskName: string) {
     await this.page.fill('input[placeholder="Task name"]', taskName);
+  }
+
+  getTaskNameInput() {
+    return this.page.locator('input[placeholder="Task name"]');
+  }
+
+  async typeTaskName(taskName: string) {
+    await this.getTaskNameInput().pressSequentially(taskName);
+  }
+
+  async taskNameInputHasValue(taskName: string) {
+    await expect(this.getTaskNameInput()).toHaveValue(taskName);
   }
 
   async saveTask(taskName: string) {

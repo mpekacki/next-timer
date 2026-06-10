@@ -48,6 +48,7 @@ function Timer() {
   }, [searchParams])
 
   const [task, setTask] = useState('')
+  const trimmedTask = task.trim()
 
   const time: { minutes: number, seconds: number } = useSelector(selectTime)
   const timeString = `${time.minutes.toString().padStart(2, '0')}:${time.seconds.toString().padStart(2, '0')}`
@@ -60,7 +61,7 @@ function Timer() {
   const availableBreakTime = `Available break time: ${useSelector(selectAvailableBreakTime)}`
   const continuousWork = useSelector(selectContinousWork)
   const isBreakAvailable = useSelector(selectIsBreakAvailable)
-  const tasks = useSelector(selectTasks).filter(savedTask => !task || savedTask.name === 'No task' || savedTask.name.toUpperCase().includes(task.toUpperCase()))
+  const tasks = useSelector(selectTasks).filter(savedTask => !trimmedTask || savedTask.name === 'No task' || savedTask.name.toUpperCase().includes(trimmedTask.toUpperCase()))
   const selectedTask = useSelector(selectSelectedTask)
   const events = useSelector(selectEvents)
   const eventsLength = events.length
@@ -75,7 +76,7 @@ function Timer() {
   const MIN_NO_OF_VISIBLE_TASKS = 10
   const showMoreTasksVisible = tasks.length > noOfVisibleTasks
   const showLessTasksVisible = noOfVisibleTasks > MIN_NO_OF_VISIBLE_TASKS
-  const showAddTaskButton = task && !tasks.find(savedTask => savedTask.name === task)
+  const showAddTaskButton = trimmedTask && !tasks.find(savedTask => savedTask.name === trimmedTask)
   const showClearTaskInputButton = !!task
   const [sortColumn, setSortColumn] = useState<'task' | 'today' | 'yesterday' | 'week' | 'month' | 'custom'>('task')
   const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc')
@@ -192,8 +193,8 @@ function Timer() {
         <input type="checkbox" checked={continuousWork} onChange={() => dispatch(setContinuousWork(!continuousWork))} id="continuousWork" name="continuousWork" />
         <label htmlFor="continuousWork">Continuous work</label>
       </div>
-      <input type="text" value={task} onChange={e => setTask(e.target.value.trim())} placeholder="Task name" />
-      {showAddTaskButton && <button onClick={() => { dispatch(addTask(task)); setTask(''); }}>Add task</button>}
+      <input type="text" value={task} onChange={e => setTask(e.target.value)} placeholder="Task name" />
+      {showAddTaskButton && <button onClick={() => { dispatch(addTask(trimmedTask)); setTask(''); }}>Add task</button>}
       {showClearTaskInputButton && <button onClick={() => setTask('')}>Clear</button>}
       <fieldset>
         <legend>Tasks</legend>
