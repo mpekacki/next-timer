@@ -130,7 +130,7 @@ function Timer() {
           custom: 0
         }
       }
-      const eventLength = Math.floor((event.end.getTime() - event.start.getTime()) / 1000)
+      const eventLength = Math.round((event.end.getTime() - event.start.getTime()) / 1000)
       if (startDate >= today) {
         newEventTotals[event.task].today += eventLength
       }

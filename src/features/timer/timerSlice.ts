@@ -3,15 +3,15 @@ import type { AppState } from "../../store";
 import { WritableDraft } from "immer/dist/types/types-external";
 
 export interface TimerState {
-  seconds: number;
+  milliseconds: number;
   status: "idle" | "running";
   phase: "work" | "break";
   longBreakCounter: number;
-  totalTimeWorkedSeconds: number;
-  availableBreakTimeSeconds: number;
+  totalTimeWorkedMilliseconds: number;
+  availableBreakTimeMilliseconds: number;
   continousWork: boolean;
   lastTimestamp: number | null;
-  initialSeconds: number;
+  initialMilliseconds: number;
   tasks: {
     name: string;
   }[];
@@ -24,32 +24,32 @@ export interface TimerState {
   customFromDate: string;
   customToDate: string;
   settings: {
-    workSeconds: number;
-    breakSeconds: number;
-    longBreakSeconds: number;
+    workMilliseconds: number;
+    breakMilliseconds: number;
+    longBreakMilliseconds: number;
     longBreakEvery: number;
   }
 }
 
 const initialState: TimerState = {
-  seconds: 25 * 60,
+  milliseconds: 25 * 60 * 1000,
   status: "idle",
   phase: "work",
   longBreakCounter: 0,
-  totalTimeWorkedSeconds: 0,
-  availableBreakTimeSeconds: 0,
+  totalTimeWorkedMilliseconds: 0,
+  availableBreakTimeMilliseconds: 0,
   continousWork: false,
   lastTimestamp: null,
-  initialSeconds: 25 * 60,
+  initialMilliseconds: 25 * 60 * 1000,
   tasks: [{ name: 'No task' }],
   selectedTask: 'No task',
   events: [],
   customFromDate: new Date(new Date().getTime() - 86400000).toISOString().slice(0, 10),
   customToDate: new Date(new Date().getTime() - 86400000).toISOString().slice(0, 10),
   settings: {
-    workSeconds: 25 * 60,
-    breakSeconds: 5 * 60,
-    longBreakSeconds: 10 * 60,
+    workMilliseconds: 25 * 60 * 1000,
+    breakMilliseconds: 5 * 60 * 1000,
+    longBreakMilliseconds: 10 * 60 * 1000,
     longBreakEvery: 4
   }
 }
@@ -62,54 +62,54 @@ export const timerSlice = createSlice({
       const now = action.payload
       let totalDecrement
       if (state.lastTimestamp) {
-        totalDecrement = Math.round((now - state.lastTimestamp) / 1000)
+        totalDecrement = now - state.lastTimestamp
       } else {
-        totalDecrement = 1
+        totalDecrement = 1000
       }
       let then = state.lastTimestamp || now - 1000
       state.lastTimestamp = now
       while (totalDecrement > 0) {
-        const decrement = Math.min(state.seconds, totalDecrement)
+        const decrement = Math.min(state.milliseconds, totalDecrement)
         totalDecrement -= decrement
-        state.seconds -= decrement
-        then += decrement * 1000
+        state.milliseconds -= decrement
+        then += decrement
         if (state.phase === "work") {
-          state.totalTimeWorkedSeconds += decrement
+          state.totalTimeWorkedMilliseconds += decrement
         } else {
-          state.availableBreakTimeSeconds -= decrement
+          state.availableBreakTimeMilliseconds -= decrement
         }
-        if (state.seconds === 0) {
-          let newSeconds: number, newPhase: "work" | "break"
+        if (state.milliseconds === 0) {
+          let newMilliseconds: number, newPhase: "work" | "break"
           if (state.phase === "work") {
             state.longBreakCounter += 1
             const isLongBreak = state.longBreakCounter === state.settings.longBreakEvery
             if (isLongBreak) {
               state.longBreakCounter = 0
-              state.availableBreakTimeSeconds += state.settings.longBreakSeconds
+              state.availableBreakTimeMilliseconds += state.settings.longBreakMilliseconds
             } else {
-              state.availableBreakTimeSeconds += state.settings.breakSeconds
+              state.availableBreakTimeMilliseconds += state.settings.breakMilliseconds
             }
             if (!state.continousWork) {
               newPhase = "break"
-              newSeconds = isLongBreak ? state.settings.longBreakSeconds : state.settings.breakSeconds
+              newMilliseconds = isLongBreak ? state.settings.longBreakMilliseconds : state.settings.breakMilliseconds
             } else {
               newPhase = "work"
-              newSeconds = state.settings.workSeconds
+              newMilliseconds = state.settings.workMilliseconds
             }
-            addEvent(state, then, state.initialSeconds)
+            addEvent(state, then, state.initialMilliseconds)
           } else {
             newPhase = "work"
-            newSeconds = state.settings.workSeconds
+            newMilliseconds = state.settings.workMilliseconds
           }
           state.phase = newPhase
-          state.seconds = newSeconds
-          state.initialSeconds = newSeconds
+          state.milliseconds = newMilliseconds
+          state.initialMilliseconds = newMilliseconds
         }
       }
     },
     start: (state) => {
       state.status = "running",
-        state.initialSeconds = state.seconds
+        state.initialMilliseconds = state.milliseconds
     },
     hold: (state) => {
       state.status = "idle"
@@ -118,23 +118,23 @@ export const timerSlice = createSlice({
     },
     returnToWork: (state) => {
       state.phase = "work"
-      state.seconds = state.settings.workSeconds
-      state.initialSeconds = state.settings.workSeconds
+      state.milliseconds = state.settings.workMilliseconds
+      state.initialMilliseconds = state.settings.workMilliseconds
     },
     startBreak: (state) => {
       addEventForNow(state)
       state.phase = "break"
-      state.seconds = state.availableBreakTimeSeconds
+      state.milliseconds = state.availableBreakTimeMilliseconds
     },
     reset: (state) => {
       state.status = "idle"
       state.phase = "work"
       state.longBreakCounter = 0
-      state.totalTimeWorkedSeconds = 0
-      state.availableBreakTimeSeconds = 0
+      state.totalTimeWorkedMilliseconds = 0
+      state.availableBreakTimeMilliseconds = 0
       state.lastTimestamp = null
-      state.initialSeconds = state.settings.workSeconds
-      state.seconds = state.settings.workSeconds
+      state.initialMilliseconds = state.settings.workMilliseconds
+      state.milliseconds = state.settings.workMilliseconds
     },
     setContinuousWork: (state, action: PayloadAction<boolean>) => {
       state.continousWork = action.payload
@@ -150,7 +150,7 @@ export const timerSlice = createSlice({
         addEventForNow(state, false);
       }
       state.selectedTask = action.payload
-      state.initialSeconds = state.seconds
+      state.initialMilliseconds = state.milliseconds
       moveTaskToTop(state, action.payload)
     },
     setCustomFromDate: (state, action: PayloadAction<string>) => {
@@ -169,12 +169,12 @@ export const timerSlice = createSlice({
 })
 
 function addEventForNow(state: WritableDraft<TimerState>, moveTask = true) {
-  addEvent(state, state.lastTimestamp!, state.initialSeconds - state.seconds, moveTask)
+  addEvent(state, state.lastTimestamp!, state.initialMilliseconds - state.milliseconds, moveTask)
 }
 
-function addEvent(state: WritableDraft<TimerState>, then: number, seconds: number, moveTask = true) {
+function addEvent(state: WritableDraft<TimerState>, then: number, milliseconds: number, moveTask = true) {
   state.events.push({
-    start: then - seconds * 1000,
+    start: then - milliseconds,
     end: then,
     task: state.selectedTask
   })
@@ -195,13 +195,27 @@ function moveTaskToTop(state: WritableDraft<TimerState>, taskName: string) {
 
 export const { tick, start, hold, returnToWork, startBreak, reset, setContinuousWork, addTask, setSelectedTask, setCustomFromDate, setCustomToDate } = timerSlice.actions
 
-export const selectTime = (state: AppState) => ({ minutes: Math.floor(state.seconds / 60), seconds: state.seconds % 60 })
+// ceil so the countdown only drops a displayed second once it has fully elapsed,
+// even when setInterval fires slightly late
+const selectRemainingSeconds = (state: AppState) => Math.ceil(state.milliseconds / 1000)
+
+export const selectTime = (state: AppState) => {
+  const totalSeconds = selectRemainingSeconds(state)
+  return { minutes: Math.floor(totalSeconds / 60), seconds: totalSeconds % 60 }
+}
 export const selectIsIdle = (state: AppState) => state.status === "idle"
 export const selectIsRunning = (state: AppState) => state.status === "running"
 export const selectIsWork = (state: AppState) => state.phase === "work"
 export const selectIsBreak = (state: AppState) => state.phase === "break"
-export const selectTotalTimeWorked = (state: AppState) => `${String(Math.floor(state.totalTimeWorkedSeconds / 60 / 60)).padStart(2, "0")}:${String(Math.floor(state.totalTimeWorkedSeconds / 60) % 60).padStart(2, "0")}:${String(state.totalTimeWorkedSeconds % 60).padStart(2, "0")}`
-export const selectAvailableBreakTime = (state: AppState) => `${String(Math.floor(state.availableBreakTimeSeconds / 60 / 60)).padStart(2, "0")}:${String(Math.floor(state.availableBreakTimeSeconds / 60) % 60).padStart(2, "0")}:${String(state.availableBreakTimeSeconds % 60).padStart(2, "0")}`
+
+function formatHoursMinutesSeconds(totalSeconds: number) {
+  return `${String(Math.floor(totalSeconds / 60 / 60)).padStart(2, "0")}:${String(Math.floor(totalSeconds / 60) % 60).padStart(2, "0")}:${String(totalSeconds % 60).padStart(2, "0")}`
+}
+
+// total time worked counts up (floor), available break time counts down (ceil),
+// so sub-second jitter never makes either display a second that hasn't fully elapsed
+export const selectTotalTimeWorked = (state: AppState) => formatHoursMinutesSeconds(Math.floor(state.totalTimeWorkedMilliseconds / 1000))
+export const selectAvailableBreakTime = (state: AppState) => formatHoursMinutesSeconds(Math.ceil(state.availableBreakTimeMilliseconds / 1000))
 export const selectContinousWork = (state: AppState) => state.continousWork
 export const selectTasks = (state: AppState) => state.tasks
 export const selectSelectedTask = (state: AppState) => state.selectedTask
@@ -212,7 +226,7 @@ export const selectEvents = (state: AppState) => state.events.map(event => ({
 }))
 export const selectCustomFromDate = (state: AppState) => state.customFromDate
 export const selectCustomToDate = (state: AppState) => state.customToDate
-export const selectIsBreakAvailable = (state: AppState) => state.availableBreakTimeSeconds > 0
+export const selectIsBreakAvailable = (state: AppState) => state.availableBreakTimeMilliseconds > 0
 
 
 export default timerSlice.reducer
