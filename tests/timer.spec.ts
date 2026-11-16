@@ -249,6 +249,39 @@ test('does not allow creation of duplicate tasks', async ({ page }) => {
   await app.showsAddTaskButton();
 });
 
+test('normalizes whitespace and invisible characters in task names', async ({ page }) => {
+  const app = new ApplicationRunner(page);
+  await app.goToStartPage();
+  await app.saveTask('​Feed the cat​');
+  await app.saveTask('﻿Walk  the\tdog⁠ ');
+  await app.saveTask('‌Play games‍');
+  await app.saveTask('Family 👨‍👩‍👧 time');
+  await app.hasSavedTasks(['No task', 'Family 👨‍👩‍👧 time', 'Play games', 'Walk the dog', 'Feed the cat']);
+  await app.fillTaskName('Feed the cat​');
+  await app.doesNotShowAddTaskButton();
+  await app.fillTaskName('Walk the  dog');
+  await app.doesNotShowAddTaskButton();
+  await app.fillTaskName('​ ⁠﻿');
+  await app.doesNotShowAddTaskButton();
+});
+
+test('normalizes pasted task names', async ({ page, context, browserName }) => {
+  // Clipboard access in headless WebKit is not verified; Chromium and Firefox cover real paste.
+  test.skip(browserName === 'webkit', 'clipboard paste not verified on WebKit');
+  if (browserName === 'chromium') {
+    await context.grantPermissions(['clipboard-read', 'clipboard-write']);
+  }
+  const app = new ApplicationRunner(page);
+  await app.goToStartPage();
+  await app.pasteTaskName('\n  ​Feed the cat​\nnow  \n');
+  await app.getAddTaskButton().click();
+  await app.pasteTaskName(' Walk the dog\r\n');
+  await app.getAddTaskButton().click();
+  await app.hasSavedTasks(['No task', 'Walk the dog', 'Feed the cat now']);
+  await app.pasteTaskName('Walk the dog⁠\n');
+  await app.doesNotShowAddTaskButton();
+});
+
 test('cut break early', async ({ page }) => {
   const app = new ApplicationRunner(page);
   await app.goToStartPage();
@@ -445,6 +478,19 @@ class ApplicationRunner {
 
   async taskNameInputHasValue(taskName: string) {
     await expect(this.getTaskNameInput()).toHaveValue(taskName);
+  }
+
+  async pasteTaskName(text: string) {
+    const input = this.getTaskNameInput();
+    await input.fill('');
+    await input.click();
+    await this.page.evaluate(t => navigator.clipboard.writeText(t), text);
+    await this.page.keyboard.press('ControlOrMeta+V');
+  }
+
+  async hasSavedTasks(taskNames: string[]) {
+    await expect.poll(() => this.page.locator('fieldset input[type="radio"]')
+      .evaluateAll(els => els.map(el => (el as HTMLInputElement).value))).toEqual(taskNames);
   }
 
   async saveTask(taskName: string) {

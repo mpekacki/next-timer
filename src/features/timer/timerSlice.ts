@@ -1,6 +1,7 @@
 import { PayloadAction, createSlice } from "@reduxjs/toolkit";
 import type { AppState } from "../../store";
 import { WritableDraft } from "immer/dist/types/types-external";
+import { normalizeTaskName } from "./taskName";
 
 export interface TimerState {
   milliseconds: number;
@@ -140,10 +141,11 @@ export const timerSlice = createSlice({
       state.continousWork = action.payload
     },
     addTask: (state, action: PayloadAction<string>) => {
-      if (state.tasks.find(task => task.name === action.payload)) {
+      const name = normalizeTaskName(action.payload)
+      if (!name || state.tasks.find(task => task.name === name)) {
         return
       }
-      state.tasks.splice(1, 0, { name: action.payload })
+      state.tasks.splice(1, 0, { name })
     },
     setSelectedTask: (state, action: PayloadAction<string>) => {
       if (state.phase === "work" && state.status === "running") {
