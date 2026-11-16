@@ -28,6 +28,7 @@ import {
   selectCustomToDate
 } from './timerSlice'
 import { useAppDispatch } from '../../hooks'
+import { normalizeTaskName } from './taskName'
 import { useAutoAnimate } from '@formkit/auto-animate/react'
 import { useSearchParams } from 'next/navigation'
 
@@ -48,7 +49,7 @@ function Timer() {
   }, [searchParams])
 
   const [task, setTask] = useState('')
-  const trimmedTask = task.trim()
+  const normalizedTask = normalizeTaskName(task)
 
   const time: { minutes: number, seconds: number } = useSelector(selectTime)
   const timeString = `${time.minutes.toString().padStart(2, '0')}:${time.seconds.toString().padStart(2, '0')}`
@@ -61,7 +62,7 @@ function Timer() {
   const availableBreakTime = `Available break time: ${useSelector(selectAvailableBreakTime)}`
   const continuousWork = useSelector(selectContinousWork)
   const isBreakAvailable = useSelector(selectIsBreakAvailable)
-  const tasks = useSelector(selectTasks).filter(savedTask => !trimmedTask || savedTask.name === 'No task' || savedTask.name.toUpperCase().includes(trimmedTask.toUpperCase()))
+  const tasks = useSelector(selectTasks).filter(savedTask => !normalizedTask || savedTask.name === 'No task' || savedTask.name.toUpperCase().includes(normalizedTask.toUpperCase()))
   const selectedTask = useSelector(selectSelectedTask)
   const events = useSelector(selectEvents)
   const eventsLength = events.length
@@ -76,7 +77,7 @@ function Timer() {
   const MIN_NO_OF_VISIBLE_TASKS = 10
   const showMoreTasksVisible = tasks.length > noOfVisibleTasks
   const showLessTasksVisible = noOfVisibleTasks > MIN_NO_OF_VISIBLE_TASKS
-  const showAddTaskButton = trimmedTask && !tasks.find(savedTask => savedTask.name === trimmedTask)
+  const showAddTaskButton = normalizedTask && !tasks.find(savedTask => savedTask.name === normalizedTask)
   const showClearTaskInputButton = !!task
   const [sortColumn, setSortColumn] = useState<'task' | 'today' | 'yesterday' | 'week' | 'month' | 'custom'>('task')
   const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc')
@@ -194,7 +195,7 @@ function Timer() {
         <label htmlFor="continuousWork">Continuous work</label>
       </div>
       <input type="text" value={task} onChange={e => setTask(e.target.value)} placeholder="Task name" />
-      {showAddTaskButton && <button onClick={() => { dispatch(addTask(trimmedTask)); setTask(''); }}>Add task</button>}
+      {showAddTaskButton && <button onClick={() => { dispatch(addTask(normalizedTask)); setTask(''); }}>Add task</button>}
       {showClearTaskInputButton && <button onClick={() => setTask('')}>Clear</button>}
       <fieldset>
         <legend>Tasks</legend>
